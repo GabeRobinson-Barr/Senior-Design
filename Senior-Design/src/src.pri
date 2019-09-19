@@ -14,7 +14,9 @@ SOURCES += \
     $$PWD/scene/transform.cpp \
     $$PWD/openglcontext.cpp \
     $$PWD/scene/terrain.cpp \
-    $$PWD/scene/worldaxes.cpp
+    $$PWD/scene/worldaxes.cpp \
+    $$PWD/gameobject.cpp \
+    $$PWD/collider.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -29,4 +31,6 @@ HEADERS += \
     $$PWD/scene/transform.h \
     $$PWD/openglcontext.h \
     $$PWD/scene/terrain.h \
-    $$PWD/scene/worldaxes.h
+    $$PWD/scene/worldaxes.h \
+    $$PWD/gameobject.h \
+    $$PWD/collider.h
