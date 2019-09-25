@@ -196,6 +196,8 @@ void MyGL::GLDrawScene()
         {
             // do something for mesh types
         }
+        mp_progLambert->setGeometryColor(obj->getColor());
+
         mp_progLambert->draw(*mp_geomSphere);
     }
 }

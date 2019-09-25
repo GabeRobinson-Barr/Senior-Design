@@ -11,6 +11,7 @@ public:
 
     void CreateTestScene();
     void update(float dt);
+    void checkCollisions();
 
     std::vector<GameObject*> getObjects();
 

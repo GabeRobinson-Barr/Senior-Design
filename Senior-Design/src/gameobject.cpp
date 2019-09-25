@@ -15,6 +15,20 @@ GameObject::~GameObject()
 
 }
 
+void GameObject::collide(GameObject *obj1, GameObject *obj2)
+{
+    bool collided = false;
+    // ONLY SPHERES IMPLEMENTED RN
+    glm::vec3 diff = obj1->getPos() - obj2->getPos();
+    float collisionDist = (obj1->scale.x + obj2->scale.x) / 2.f;
+    if(glm::length(diff) <= collisionDist)
+    {
+        collided = true;
+    }
+    obj1->hasCollision = collided;
+    obj2->hasCollision = collided;
+}
+
 void GameObject::update(float dt)
 {
     glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
@@ -51,4 +65,16 @@ glm::vec3 GameObject::getPos()
 glm::mat4 GameObject::getTransform()
 {
     return m_transform.T();
+}
+
+glm::vec4 GameObject::getColor()
+{
+    if(hasCollision)
+    {
+        return glm::vec4(0,1,0,1);
+    }
+    else
+    {
+        return glm::vec4(1,0,0,1);
+    }
 }

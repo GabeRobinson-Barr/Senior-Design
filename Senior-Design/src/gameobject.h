@@ -19,12 +19,15 @@ public:
     GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type);
     ~GameObject();
 
+    static void collide(GameObject* obj1, GameObject* obj2);
+
     void update(float dt);
     void addForce(glm::vec3 force);
     glm::vec3 getForce();
 
     glm::vec3 getPos();
     glm::mat4 getTransform();
+    glm::vec4 getColor();
     const MeshType geomType;
 
 private:
@@ -42,8 +45,8 @@ private:
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space
 
-    bool hasCollision;
-    bool updated;
+    bool hasCollision = false;
+    bool updated = false;
 
     std::vector<Collider*> colliders; // List of collisions involving this object
     // RETHINK THIS/ASK PROF JANG
