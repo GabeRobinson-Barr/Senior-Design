@@ -1,5 +1,4 @@
-#ifndef COLLIDER_H
-#define COLLIDER_H
+#pragma once
 #include "gameobject.h"
 
 class Collider
@@ -16,5 +15,3 @@ private:
     bool isSticky;
     float collisionTime; // Time these objects have collided
 };
-
-#endif // COLLIDER_H

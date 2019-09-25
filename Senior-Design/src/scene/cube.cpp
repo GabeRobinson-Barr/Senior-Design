@@ -142,7 +142,7 @@ void Cube::create()
 
 
     for(int i = 0; i < CUB_VERT_COUNT; i++){
-        cub_vert_col[i] = glm::vec4(0.2f, 1.0f, 0.6f, 1);
+        cub_vert_col[i] = glm::vec4(1,0,0, 1);
     }
 
     count = CUB_IDX_COUNT;

@@ -79,7 +79,7 @@ void MyGL::initializeGL()
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
-    mp_progLambert->setGeometryColor(glm::vec4(0,1,0,1));
+    mp_progLambert->setGeometryColor(glm::vec4(1,0,0,1));
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -172,32 +172,23 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < mp_terrain->dimensions.x; ++x)
+    for(GameObject* obj : mp_terrain->getObjects())
     {
-        for(int y = 0; y < mp_terrain->dimensions.y; ++y)
+        mp_progFlat->setModelMatrix(obj->getTransform());
+        Drawable* geom;
+        if (obj->geomType == MeshType::CUBE)
         {
-            for(int z = 0; z < mp_terrain->dimensions.z; ++z)
-            {
-                BlockType t;
-                if((t = mp_terrain->m_blocks[x][y][z]) != EMPTY)
-                {
-                    switch(t)
-                    {
-                    case DIRT:
-                        mp_progLambert->setGeometryColor(glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
-                        break;
-                    case GRASS:
-                        mp_progLambert->setGeometryColor(glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
-                        break;
-                    case STONE:
-                        mp_progLambert->setGeometryColor(glm::vec4(0.5f));
-                        break;
-                    }
-                    mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
-                    mp_progLambert->draw(*mp_geomCube);
-                }
-            }
+            geom = mp_geomCube;
         }
+        else if (obj->geomType == MeshType::SPHERE)
+        {
+            //geom = mp_geomSphere;
+        }
+        else
+        {
+            // do something for mesh types
+        }
+        mp_progFlat->draw(*mp_geomCube);
     }
 }
 

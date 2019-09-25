@@ -1,33 +1,46 @@
-#ifndef GAMEOBJECT_H
-#define GAMEOBJECT_H
+#pragma once
 #include "drawable.h"
 #include "scene/cube.h"
-#include "collider.h"
+//#include "collider.h"
+#include <vector>
+#include "scene/transform.h"
 
+enum MeshType {
+    CUBE,
+    SPHERE,
+    MESH
+};
+
+class Collider;
 
 class GameObject
 {
 public:
-    GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, Drawable* geom);
+    GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type);
     ~GameObject();
 
     void update(float dt);
     void addForce(glm::vec3 force);
     glm::vec3 getForce();
 
+    glm::vec3 getPos();
+    glm::mat4 getTransform();
+    const MeshType geomType;
 
 private:
-    Drawable* mp_geometry;
-    glm::vec3 scale;
-    glm::vec3 pos;
-    glm::vec3 rot;
+    //glm::vec3 scale;
+    //glm::vec3 pos;
+    //glm::vec3 rot;
+    Transform m_transform;
     glm::vec3 vel;
     glm::vec3 rotVel;
     float mass;
+    float drag; // drag coefficient responsible for slowing movement
+    float angDrag; // angular drag coefficient responsible for slowing rotation
     glm::vec3 forces; // Total forces acting on this object
 
-    glm::mat4 obj_to_world;
-    glm::mat4 world_to_obj; // Transform matrix from world space
+    //glm::mat4 obj_to_world;
+    //glm::mat4 world_to_obj; // Transform matrix from world space
 
     bool hasCollision;
     bool updated;
@@ -38,5 +51,3 @@ private:
     float connectedMass; // total mass of sticky objects
 
 };
-
-#endif // GAMEOBJECT_H
