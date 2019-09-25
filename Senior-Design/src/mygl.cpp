@@ -8,7 +8,7 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
-      mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
+      mp_geomCube(new Cube(this)), mp_geomSphere(new Sphere(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain())
 {
@@ -28,8 +28,10 @@ MyGL::~MyGL()
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
     mp_geomCube->destroy();
+    mp_geomSphere->destroy();
 
     delete mp_geomCube;
+    delete mp_geomSphere;
     delete mp_worldAxes;
     delete mp_progLambert;
     delete mp_progFlat;
@@ -69,6 +71,7 @@ void MyGL::initializeGL()
 
     //Create the instance of Cube
     mp_geomCube->create();
+    mp_geomSphere->create();
     mp_worldAxes->create();
 
     // Create and set up the diffuse shader
@@ -93,8 +96,11 @@ void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
-                       glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
+    //*mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
+                       //glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
+
+    *mp_camera = Camera(w, h, glm::vec3(0, 0, 50),
+                       glm::vec3(0,0,0), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -110,6 +116,8 @@ void MyGL::resizeGL(int w, int h)
 // We're treating MyGL as our game engine class, so we're going to use timerUpdate
 void MyGL::timerUpdate()
 {
+    mp_terrain->update((float)timer.interval() / 1000.f);
+
     float amount = 2.0f;
     if (key_Right) {
         mp_camera->RotateAboutUp(-amount);
@@ -174,7 +182,7 @@ void MyGL::GLDrawScene()
 {
     for(GameObject* obj : mp_terrain->getObjects())
     {
-        mp_progFlat->setModelMatrix(obj->getTransform());
+        mp_progLambert->setModelMatrix(obj->getTransform());
         Drawable* geom;
         if (obj->geomType == MeshType::CUBE)
         {
@@ -182,13 +190,13 @@ void MyGL::GLDrawScene()
         }
         else if (obj->geomType == MeshType::SPHERE)
         {
-            //geom = mp_geomSphere;
+            geom = mp_geomSphere;
         }
         else
         {
             // do something for mesh types
         }
-        mp_progFlat->draw(*mp_geomCube);
+        mp_progLambert->draw(*mp_geomSphere);
     }
 }
 

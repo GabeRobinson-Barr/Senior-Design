@@ -10,7 +10,7 @@ public:
     Terrain();
 
     void CreateTestScene();
-    void updateCollisions();
+    void update(float dt);
 
     std::vector<GameObject*> getObjects();
 

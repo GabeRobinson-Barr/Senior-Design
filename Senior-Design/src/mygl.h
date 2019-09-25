@@ -5,6 +5,7 @@
 #include <utils.h>
 #include <shaderprogram.h>
 #include <scene/cube.h>
+#include <scene/sphere.h>
 #include <scene/worldaxes.h>
 #include "camera.h"
 #include <scene/terrain.h>
@@ -18,6 +19,7 @@ class MyGL : public OpenGLContext
     Q_OBJECT
 private:
     Cube* mp_geomCube;// The instance of a unit cube we can use to render any cube. Should NOT be used in final version of your project.
+    Sphere* mp_geomSphere;
     WorldAxes* mp_worldAxes; // A wireframe representation of the world axes. It is hard-coded to sit centered at (32, 128, 32).
     ShaderProgram* mp_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram* mp_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)

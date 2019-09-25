@@ -10,8 +10,7 @@
 class Sphere : public Drawable
 {
 public:
-    Sphere(OpenGLContext* context) : Drawable(context){};
+    Sphere(OpenGLContext* context) : Drawable(context){}
     virtual ~Sphere(){}
     void create() override;
 };
-

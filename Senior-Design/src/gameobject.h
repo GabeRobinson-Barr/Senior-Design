@@ -28,9 +28,9 @@ public:
     const MeshType geomType;
 
 private:
-    //glm::vec3 scale;
-    //glm::vec3 pos;
-    //glm::vec3 rot;
+    glm::vec3 scale;
+    glm::vec3 pos;
+    glm::vec3 rot;
     Transform m_transform;
     glm::vec3 vel;
     glm::vec3 rotVel;
