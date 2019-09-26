@@ -19,14 +19,29 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
     bool collided = false;
     // ONLY SPHERES IMPLEMENTED RN
-    glm::vec3 diff = obj1->getPos() - obj2->getPos();
-    float collisionDist = (obj1->scale.x + obj2->scale.x) / 2.f;
-    if(glm::length(diff) <= collisionDist)
+    if(obj1->geomType == SPHERE && obj2->geomType == SPHERE) // simple sphere check
     {
-        collided = true;
+        glm::vec3 diff = obj1->getPos() - obj2->getPos();
+        float collisionDist = (obj1->scale.x + obj2->scale.x) / 2.f;
+        if(glm::length(diff) <= collisionDist)
+        {
+            collided = true;
+        }
     }
-    obj1->hasCollision = collided;
-    obj2->hasCollision = collided;
+    else
+    {
+        // TODO: TRY TO IMPLEMENT GJK
+        // GET THE MINOWSKI DIFF OF THE OBJECTS (USE SUPPORT MAPPING FOR THIS)
+        // FIND THE SUPPORT POINT TO THE ORIGEN
+        // DO THE SIMPLEX THINGY WHERE YOU ITERATIVELY FIND THE CLOSEST POINT
+
+        /* take closest (support) points to other's origin
+            get minkowski diff between the two and find vector from origin to that
+            recursively find minkowski point along vector from origin to last point*/
+    }
+
+    obj1->hasCollision = collided || obj1->hasCollision;
+    obj2->hasCollision = collided || obj2->hasCollision;
 }
 
 void GameObject::update(float dt)
@@ -45,6 +60,7 @@ void GameObject::update(float dt)
 
     m_transform = Transform(pos, rot, scale);
     forces = glm::vec3(0.f); // reset the forces
+    hasCollision = false;
 }
 
 void GameObject::addForce(glm::vec3 force)
