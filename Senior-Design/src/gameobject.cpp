@@ -12,7 +12,6 @@ GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass
 
 GameObject::~GameObject()
 {
-
 }
 
 void GameObject::collide(GameObject *obj1, GameObject *obj2)
@@ -42,6 +41,23 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
 
     obj1->hasCollision = collided || obj1->hasCollision;
     obj2->hasCollision = collided || obj2->hasCollision;
+}
+
+glm::vec3 GameObject::getCubeSupport(glm::vec3 v)
+{
+    return glm::vec3(sgn(v.x)*scale.x, sgn(v.y)*scale.y, sgn(v.z)*scale.z);
+}
+
+glm::vec3 GameObject::getSphereSupport(glm::vec3 v)
+{
+    float len = glm::length(v);
+    if (len <= 0.001f) // if v has no length return a vector of 0 length
+    {
+        return glm::vec3(0.f);
+    }
+    glm::vec3 nor = glm::normalize(v);
+    return glm::vec3(scale.x * nor.x, scale.y * nor.y, scale.z * nor.z);
+
 }
 
 void GameObject::update(float dt)

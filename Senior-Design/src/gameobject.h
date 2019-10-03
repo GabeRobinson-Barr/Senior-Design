@@ -21,6 +21,29 @@ public:
 
     static void collide(GameObject* obj1, GameObject* obj2);
 
+    // These 2 functions return the normalized support point for a cube or sphere
+    // for use in determining collision points
+    glm::vec3 getCubeSupport(glm::vec3 v);
+    glm::vec3 getSphereSupport(glm::vec3 v);
+
+    // Helper function that returns the sign of an input number
+    template<typename T>
+    static int sgn(T a)
+    {
+        if (a > 0)
+        {
+            return 1;
+        }
+        else if (a < 0)
+        {
+            return -1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     void update(float dt);
     void addForce(glm::vec3 force);
     glm::vec3 getForce();
