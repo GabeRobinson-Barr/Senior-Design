@@ -14,10 +14,23 @@ GameObject::~GameObject()
 {
 }
 
+// this is a helper function to calculate the closest point on the given simplex to the origin
+// as well as simplifying the points used to describe the simplex if necessary
+glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
+{
+    glm::vec3 closest;
+    // Find Closest point
+    // track which points were used to calculate the closest point
+
+    // once we determine which point is closest only retain relevant points from the simplex
+    return closest;
+}
+
+
 void GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
     bool collided = false;
-    // ONLY SPHERES IMPLEMENTED RN
+
     if(obj1->geomType == SPHERE && obj2->geomType == SPHERE) // simple sphere check
     {
         glm::vec3 diff = obj1->getPos() - obj2->getPos();
@@ -29,35 +42,62 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
     }
     else
     {
-        // TODO: TRY TO IMPLEMENT GJK
-        // GET THE MINOWSKI DIFF OF THE OBJECTS (USE SUPPORT MAPPING FOR THIS)
-        // FIND THE SUPPORT POINT TO THE ORIGEN
-        // DO THE SIMPLEX THINGY WHERE YOU ITERATIVELY FIND THE CLOSEST POINT
 
-        /* take closest (support) points to other's origin
-            get minkowski diff between the two and find vector from origin to that
-            recursively find minkowski point along vector from origin to last point*/
+        /* GJK Algorithm:
+           take closest (support) points to other's origin
+           get minkowski diff between the two and find vector from origin to that
+           recursively find minkowski point along vector from origin to last point*/
+
+        float epsilon = 0.01f; // distance at which we say objects are "close enough" to collide
+        glm::vec3 v = glm::vec3(1.f,0.f,0.f);
+        std::vector<glm::vec3> W = std::vector<glm::vec3>(); // Constructed simplex
+        float u = 0.f; // Lower bound of collision distance
+        bool closeEnough = false;
+
+        v = obj1->getSupport(v) - obj2->getSupport(-v); // initialize v as some arbitrary point on the minkowski sum A - B
+        float lenV = glm::length(v);
+
+        while(!closeEnough && lenV <= epsilon)
+        {
+            glm::vec3 w = obj1->getSupport(-v) - obj2->getSupport(v);
+            float delta = glm::dot(v, w) / lenV;
+            u = std::max(u, delta);
+            if(u > epsilon) break; // if u is positive then these objects do not collide
+            closeEnough = (lenV - u) <= epsilon;
+
+            if(!closeEnough)
+            {
+                W.push_back(w);
+                v = closestSimplexPt(&W);
+                lenV = glm::length(v);
+            }
+        }
     }
 
     obj1->hasCollision = collided || obj1->hasCollision;
     obj2->hasCollision = collided || obj2->hasCollision;
 }
 
-glm::vec3 GameObject::getCubeSupport(glm::vec3 v)
+glm::vec3 GameObject::getSupport(glm::vec3 v)
 {
-    return glm::vec3(sgn(v.x)*scale.x, sgn(v.y)*scale.y, sgn(v.z)*scale.z);
-}
-
-glm::vec3 GameObject::getSphereSupport(glm::vec3 v)
-{
-    float len = glm::length(v);
-    if (len <= 0.001f) // if v has no length return a vector of 0 length
+    if (geomType == CUBE)
     {
-        return glm::vec3(0.f);
+        return glm::vec3(sgn(v.x)*scale.x, sgn(v.y)*scale.y, sgn(v.z)*scale.z);
     }
-    glm::vec3 nor = glm::normalize(v);
-    return glm::vec3(scale.x * nor.x, scale.y * nor.y, scale.z * nor.z);
-
+    else if (geomType == SPHERE)
+    {
+        float len = glm::length(v);
+        if (len <= 0.001f) // if v has no length return a vector of 0 length
+        {
+            return glm::vec3(0.f);
+        }
+        glm::vec3 nor = glm::normalize(v);
+        return glm::vec3(scale.x * nor.x, scale.y * nor.y, scale.z * nor.z);
+    }
+    else
+    {
+        return glm::vec3(0);
+    }
 }
 
 void GameObject::update(float dt)
