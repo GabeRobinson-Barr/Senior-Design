@@ -21,7 +21,7 @@ Octree::Octree(glm::vec3 min, glm::vec3 max) :
     // Setup the 8 children as empty nodes
     if (range > 10)
     {
-        cout << minX << "," << maxX << '\n';
+        //cout << minX << "," << maxX << '\n';
         nodes[xyz] = new Octree(glm::vec3(minX, minY, minZ), glm::vec3(midX, midY, midZ));
         nodes[xyZ] = new Octree(glm::vec3(minX, minY, midZ), glm::vec3(midX, midY, maxZ));
         nodes[xYz] = new Octree(glm::vec3(minX, midY, minZ), glm::vec3(midX, maxY, midZ));

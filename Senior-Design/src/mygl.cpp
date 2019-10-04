@@ -198,7 +198,7 @@ void MyGL::GLDrawScene()
         }
         mp_progLambert->setGeometryColor(obj->getColor());
 
-        mp_progLambert->draw(*mp_geomSphere);
+        mp_progLambert->draw(*geom);
     }
 }
 

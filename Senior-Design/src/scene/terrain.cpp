@@ -10,7 +10,7 @@ void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
     GameObject* obj1 = new GameObject(glm::vec3(0,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::SPHERE);
-    GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(3,3,3), 1, MeshType::SPHERE);
+    GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::CUBE);
     GameObject* obj3 = new GameObject(glm::vec3(20,0,0), glm::vec3(0,0,0), glm::vec3(3,3,3), 1, MeshType::SPHERE);
     root.add(obj1);
     root.add(obj2);
