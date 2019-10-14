@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_geomSphere(new Sphere(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain())
+      mp_camera(new Camera()), mp_terrain(new Terrain()), paused(false)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -99,8 +99,8 @@ void MyGL::resizeGL(int w, int h)
     //*mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
                        //glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
 
-    *mp_camera = Camera(w, h, glm::vec3(0, 0, 50),
-                       glm::vec3(0,0,0), glm::vec3(0,1,0));
+    *mp_camera = Camera(w, h, glm::vec3(10, 0, 30),
+                       glm::vec3(10,0,0), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -116,7 +116,10 @@ void MyGL::resizeGL(int w, int h)
 // We're treating MyGL as our game engine class, so we're going to use timerUpdate
 void MyGL::timerUpdate()
 {
-    mp_terrain->update((float)timer.interval() / 1000.f);
+    if(!paused)
+    {
+        mp_terrain->update((float)timer.interval() / 1000.f);
+    }
 
     float amount = 2.0f;
     if (key_Right) {
@@ -156,7 +159,9 @@ void MyGL::timerUpdate()
         mp_camera->TranslateAlongUp(amount);
     }
     mp_camera->RecomputeAttributes();
+
     update();
+
 }
 
 // This function is called whenever update() is called.
@@ -243,6 +248,8 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         key_E = true;
     } else if (e->key() == Qt::Key_R) {
         *mp_camera = Camera(this->width(), this->height());
+    } else if (e->key() == Qt::Key_Space) {
+        paused = !paused;
     }
 }
 

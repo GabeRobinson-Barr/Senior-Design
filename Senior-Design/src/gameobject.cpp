@@ -55,6 +55,24 @@ glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
             W->erase(W->begin() + farIdx);
         }
         // Calculate the closest point on a plane
+        /*float minDist = glm::length(W->at(0));
+        closest = W->at(0);
+        for(int i = 0; i < dim; i++)
+        {
+            glm::vec3 a = W->at(i);
+            glm::vec3 b = W->at((i + 1) % dim);
+            glm::vec3 c = W->at((i + 2) % dim);
+            glm::vec3 lineAB = b - a;
+            glm::vec3 lineBC = c - b;
+            glm::vec3 planeNor = glm::cross(lineAB,lineBC);
+            planeNor = glm::normalize(planeNor);
+            float t = glm::abs(glm::dot(planeNor, -a) - glm::length(a));
+            if(t < minDist){
+                minDist = t;
+                closest = -t * planeNor;
+            }
+
+        }*/
         glm::vec3 a = W->at(0);
         glm::vec3 b = W->at(1);
         glm::vec3 c = W->at(2);
@@ -75,22 +93,91 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
     bool collided = false;
 
-    /*if(obj1->geomType == SPHERE && obj2->geomType == SPHERE) // simple sphere check
+    if(obj1->geomType == SPHERE && obj2->geomType == SPHERE) // simple sphere check
     {
-        glm::vec3 diff = obj1->getPos() - obj2->getPos();
+        glm::vec3 diff = glm::abs(obj1->getPos() - obj2->getPos());
         float collisionDist = (obj1->scale.x + obj2->scale.x) / 2.f;
         if(glm::length(diff) <= collisionDist)
         {
             collided = true;
         }
-    }*/
-    //else
-    //{
+    }
+    else if (obj1->geomType == CUBE && obj2->geomType == CUBE)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            int idx = i;
+            glm::vec3 corner = glm::vec3(-0.5f, -0.5f, -0.5f);
+            if(idx >= 4)
+            {
+                corner.x = 0.5f;
+                idx -= 4;
+            }
+            if(idx >= 2)
+            {
+                corner.y = 0.5f;
+                idx -= 2;
+            }
+            if(idx >= 1)
+            {
+                corner.z = 0.5f;
+            }
+            glm::vec3 cub1Pt = corner;
+            cub1Pt = glm::vec3(obj1->m_transform.T() * glm::vec4(cub1Pt,1)); // world space corner point on cube1
 
-        /* GJK Algorithm:
+            glm::vec3 cub2Pt = corner;
+            cub2Pt = glm::vec3(obj2->m_transform.T() * glm::vec4(cub2Pt,1)); // world space corner point on cube2
+
+            // Move the support points into each other's space
+            cub1Pt = glm::vec3(obj2->m_transform.invT() * glm::vec4(cub1Pt,1));
+            cub2Pt = glm::vec3(obj1->m_transform.invT() * glm::vec4(cub2Pt,1));
+
+            cub1Pt = glm::abs(cub1Pt);
+            cub2Pt = glm::abs(cub2Pt);
+
+            glm::vec3 scale1 = glm::vec3(0.5f,0.5f,0.5f);
+            glm::vec3 scale2 = glm::vec3(0.5f,0.5f,0.5f);
+
+            if((cub1Pt.x <= scale2.x && cub1Pt.y <= scale2.y && cub1Pt.z <= scale2.z) ||
+                    (cub2Pt.x <= scale1.x && cub2Pt.y <= scale1.y && cub2Pt.z <= scale1.z))
+            {
+                collided = true;
+            }
+        }
+
+    }
+    else
+    {
+        GameObject* cube;
+        GameObject* sph;
+        if(obj1->geomType == SPHERE)
+        {
+            sph = obj1;
+            cube = obj2;
+        }
+        else
+        {
+            sph = obj2;
+            cube = obj1;
+        }
+        glm::vec3 cubSpaceSph = glm::vec3(cube->m_transform.invT() * glm::vec4(sph->getPos(),1));
+        glm::vec3 cubPoint = cube->getSupport(cubSpaceSph);
+        glm::vec3 dist = glm::abs(cubSpaceSph - cubPoint);
+        // second case handles when the cube is inside the sphere
+        if(glm::length(dist) <= sph->scale.x * 0.5f)// ||
+                //glm::length(cube->getPos() - sph->getPos()) <= sph->scale.x * 0.5f)
+        {
+            collided = true;
+        }
+
+    }
+    /*else
+    {
+
+         GJK Algorithm:
            take closest (support) points to other's origin
            get minkowski diff between the two and find vector from origin to that
-           recursively find minkowski point along vector from origin to last point*/
+           recursively find minkowski point along vector from origin to last point
 
         float epsilon = 0.001f; // distance at which we say objects are "close enough" to collide
         glm::vec3 v = glm::vec3(1.f,0.f,0.f);
@@ -104,11 +191,11 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         while(!closeEnough && lenV >= epsilon)
         {
             glm::vec3 w = obj1->getSupport(-v) - obj2->getSupport(v);
-            /*glm::vec3 w1 = obj1->getSupport(-v);
-            glm::vec3 w2 =  -obj2->getSupport(v);
-            cout << "Sup1: " << w1.x << ", " << w1.y << ", " << w1.z << '\n';
-            cout << "Sup2: " << w2.x << ", " << w2.y << ", " << w2.z << '\n';
-            cout << "W: " << w.x << ", " << w.y << ", " << w.z << '\n';*/
+            //glm::vec3 w1 = obj1->getSupport(-v);
+            //glm::vec3 w2 =  -obj2->getSupport(v);
+            //cout << "Sup1: " << w1.x << ", " << w1.y << ", " << w1.z << '\n';
+            //cout << "Sup2: " << w2.x << ", " << w2.y << ", " << w2.z << '\n';
+            //cout << "W: " << w.x << ", " << w.y << ", " << w.z << '\n';
 
             float delta = glm::dot(v, w) / lenV;
             u = std::max(u, delta);
@@ -127,7 +214,7 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         {
             collided = true;
         }
-    //}
+    }*/
 
     obj1->hasCollision = collided || obj1->hasCollision;
     obj2->hasCollision = collided || obj2->hasCollision;
@@ -159,8 +246,7 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
         supVec = glm::vec3(0);
     }
 
-    glm::mat4 t = m_transform.T();
-    supVec = glm::vec3(m_transform.T() * glm::vec4(supVec,1));
+    //glm::mat4 t = m_transform.T();
     return supVec;
 }
 
