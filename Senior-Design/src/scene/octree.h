@@ -17,6 +17,7 @@ class Octree
 {
 public:
     Octree(glm::vec3 min, glm::vec3 max);
+    Octree(glm::vec3 min, glm::vec3 max, Octree* parent);
     std::vector<GameObject*> m_Objs; // Vector of gameobjects within this node
 
     Octree* getNode(OCTREE_NODE node);
@@ -24,6 +25,7 @@ public:
     void remove(GameObject* obj);
     void move(GameObject* obj);
     void add(GameObject* obj);
+    std::vector<std::pair<GameObject*, GameObject*>>& getCollisionPairs(std::vector<std::pair<GameObject*,GameObject*>>& collisionPairs);
 
     std::vector<GameObject*> getObjects();
 
@@ -32,6 +34,7 @@ public:
     glm::vec3 maxPoint;
 
 private:
+    Octree* parent;
     Octree* nodes[8];
 
     bool isLeaf;

@@ -48,6 +48,7 @@ public:
     glm::vec3 getForce();
 
     glm::vec3 getPos();
+    glm::vec3 getScale();
     glm::mat4 getTransform();
     glm::vec4 getColor();
     const MeshType geomType;

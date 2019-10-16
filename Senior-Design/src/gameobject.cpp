@@ -171,50 +171,6 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         }
 
     }
-    /*else
-    {
-
-         GJK Algorithm:
-           take closest (support) points to other's origin
-           get minkowski diff between the two and find vector from origin to that
-           recursively find minkowski point along vector from origin to last point
-
-        float epsilon = 0.001f; // distance at which we say objects are "close enough" to collide
-        glm::vec3 v = glm::vec3(1.f,0.f,0.f);
-        std::vector<glm::vec3> W = std::vector<glm::vec3>(); // Constructed simplex
-        float u = 0.f; // Lower bound of collision distance
-        bool closeEnough = false;
-
-        v = obj1->getSupport(v) - obj2->getSupport(-v); // initialize v as some arbitrary point on the minkowski sum A - B
-        float lenV = glm::length(v);
-
-        while(!closeEnough && lenV >= epsilon)
-        {
-            glm::vec3 w = obj1->getSupport(-v) - obj2->getSupport(v);
-            //glm::vec3 w1 = obj1->getSupport(-v);
-            //glm::vec3 w2 =  -obj2->getSupport(v);
-            //cout << "Sup1: " << w1.x << ", " << w1.y << ", " << w1.z << '\n';
-            //cout << "Sup2: " << w2.x << ", " << w2.y << ", " << w2.z << '\n';
-            //cout << "W: " << w.x << ", " << w.y << ", " << w.z << '\n';
-
-            float delta = glm::dot(v, w) / lenV;
-            u = std::max(u, delta);
-            if(u > epsilon) break; // if u is positive then these objects do not collide
-            closeEnough = (lenV - u) <= epsilon;
-            if(!closeEnough)
-            {
-                W.push_back(w);
-                v = closestSimplexPt(&W);
-                lenV = glm::length(v);
-                //cout << "V: " << v.x << ", " << v.y << ", " << v.z << '\n';
-                //cout << "lenv: " << lenV << '\n';
-            }
-        }
-        if(lenV <= epsilon)
-        {
-            collided = true;
-        }
-    }*/
 
     obj1->hasCollision = collided || obj1->hasCollision;
     obj2->hasCollision = collided || obj2->hasCollision;
@@ -299,4 +255,9 @@ glm::vec4 GameObject::getColor()
     {
         return glm::vec4(1,0,0,1);
     }
+}
+
+glm::vec3 GameObject::getScale()
+{
+    return scale;
 }
