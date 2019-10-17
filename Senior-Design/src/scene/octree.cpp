@@ -51,22 +51,23 @@ void Octree::add(GameObject *obj)
     m_Objs.push_back(obj);
     if(!isLeaf)
     {
-        int nodeIdx = 0;
         glm::vec3 objPos = obj->getPos();
         glm::vec3 objMax = objPos + (obj->getScale() / 2.f);
         glm::vec3 objMin = objPos - (obj->getScale() / 2.f);
 
-        // Figure out how to add objects into overlapping nodes
-        /*for(int idx = 0; i < 8; i++)
+        // Place objects into any overlapping nodes
+        for(int idx = 0; idx < 8; idx++)
         {
             glm::vec3 nodeMax = nodes[idx]->maxPoint;
             glm::vec3 nodeMin = nodes[idx]->minPoint;
-            if((objMin.x >= nodeMax.x && objMin.y >= nodeMax.y && objMin.z >= nodeMax.z) ||
-                    (objMax.x <= nodeMin.x && objMax.y <= nodeMin.y && objMax.z <= nodeMin.z))
+            // If either the min or max of all 3 dimensions falls within the node place this in the node
+            if(((objMin.x >= nodeMin.x && objMin.x <= nodeMax.x) || (objMax.x >= nodeMin.x && objMax.x <= nodeMax.x))
+                && ((objMin.y >= nodeMin.y && objMin.y <= nodeMax.y) || (objMax.y >= nodeMin.y && objMax.y <= nodeMax.y))
+                && ((objMin.z >= nodeMin.z && objMin.z <= nodeMax.z) || (objMax.z >= nodeMin.z && objMax.z <= nodeMax.z)))
             {
                 nodes[idx]->add(obj);
             }
-        }*/
+        }
     }
 }
 
@@ -93,28 +94,34 @@ std::vector<GameObject*> Octree::getObjects()
 
 std::vector<std::pair<GameObject*,GameObject*>>& Octree::getCollisionPairs(std::vector<std::pair<GameObject*,GameObject*>>& collisionPairs)
 {
-    if(isLeaf)
+    // This node is guarenteed to have at least 2 objects in it
+    if(isLeaf) // If this is a leaf, check dist and return possible collision pairs
     {
-        if(m_Objs.size() >= 2)
+        for(int i = 0; i < m_Objs.size(); i++)
         {
-            for(int i = 0; i < m_Objs.size(); i++)
+            for(int j = i; j < m_Objs.size(); j++)
             {
-                for(int j = i; j < m_Objs.size(); j++)
+                GameObject* obj1 = m_Objs.at(i);
+                GameObject* obj2 = m_Objs.at(j);
+                float dist = glm::length(obj1->getPos() - obj2->getPos());
+                glm::vec3 scaledist = obj1->getScale() + obj2->getScale();
+                float mindist = glm::max(scaledist.x, glm::max(scaledist.y, scaledist.z));
+                if(dist <= mindist) // if the objects are closer than their largest scale factor combined (and doubled) then check for a collision
                 {
-                    GameObject* obj1 = m_Objs.at(i);
-                    GameObject* obj2 = m_Objs.at(j);
-                    float dist = glm::length(obj1->getPos() - obj2->getPos());
-                    glm::vec3 scaledist = obj1->getScale() + obj2->getScale();
-                    float mindist = glm::max(scaledist.x, glm::max(scaledist.y, scaledist.z));
-                    if(dist <= mindist) // if the objects are closer than their largest scale factor combined then check for a collision
-                    {
-                        collisionPairs.insert(collisionPairs.end(), std::make_pair<GameObject*,GameObject*>((GameObject*)obj1, (GameObject*)obj2));
-                    }
+                    collisionPairs.insert(collisionPairs.end(), std::make_pair<GameObject*,GameObject*>((GameObject*)obj1, (GameObject*)obj2));
                 }
             }
         }
-
-
+    }
+    else // this is not a leaf, recurse on children nodes if they have possible collisions (2 or more objects)
+    {
+        for(int i = 0; i < 8; i++)
+        {
+            if(nodes[i]->m_Objs.size() >= 2)
+            {
+                nodes[i]->getCollisionPairs(collisionPairs);
+            }
+        }
     }
 
 
