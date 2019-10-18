@@ -51,7 +51,9 @@ public:
     glm::vec3 getScale();
     glm::mat4 getTransform();
     glm::vec4 getColor();
+    void translate(glm::vec3 t);
     const MeshType geomType;
+    bool addstuff = true; // used for debugging collision forces
 
 private:
     glm::vec3 scale;

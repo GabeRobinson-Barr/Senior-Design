@@ -18,7 +18,7 @@ GameObject::~GameObject()
 
 // this is a helper function to calculate the closest point on the given simplex to the origin
 // as well as simplifying the points used to describe the simplex if necessary
-glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
+/*glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
 {
     glm::vec3 closest;
     int dim = W->size();
@@ -55,7 +55,7 @@ glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
             W->erase(W->begin() + farIdx);
         }
         // Calculate the closest point on a plane
-        /*float minDist = glm::length(W->at(0));
+        float minDist = glm::length(W->at(0));
         closest = W->at(0);
         for(int i = 0; i < dim; i++)
         {
@@ -72,7 +72,7 @@ glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
                 closest = -t * planeNor;
             }
 
-        }*/
+        }
         glm::vec3 a = W->at(0);
         glm::vec3 b = W->at(1);
         glm::vec3 c = W->at(2);
@@ -86,12 +86,13 @@ glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
     }
 
     return closest;
-}
+}*/
 
 
 void GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
     bool collided = false;
+    glm::vec3 collisionPt;
 
     if(obj1->geomType == SPHERE && obj2->geomType == SPHERE) // simple sphere check
     {
@@ -100,6 +101,14 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         if(glm::length(diff) <= collisionDist)
         {
             collided = true;
+            collisionPt = obj2->getPos() + (glm::normalize(obj1->getPos() - obj2->getPos()) * obj2->scale * 0.5f);
+            float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
+            glm::vec3 obj1force = (force * glm::normalize(obj1->getPos() - collisionPt)) / (obj1->mass * 16.f / 1000.f);
+            glm::vec3 obj2force = (force * glm::normalize(obj2->getPos() - collisionPt)) / (obj2->mass * 16.f / 1000.f);
+            obj1->addForce(obj1force);
+            obj2->addForce(obj2force);
+            obj1->translate((collisionDist - glm::length(diff)) * glm::normalize(obj1->getPos() - collisionPt));
+            obj2->translate((collisionDist - glm::length(diff)) * glm::normalize(obj2->getPos() - collisionPt));
         }
     }
     else if (obj1->geomType == CUBE && obj2->geomType == CUBE)
@@ -138,10 +147,17 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             glm::vec3 scale1 = glm::vec3(0.5f,0.5f,0.5f);
             glm::vec3 scale2 = glm::vec3(0.5f,0.5f,0.5f);
 
-            if((cub1Pt.x <= scale2.x && cub1Pt.y <= scale2.y && cub1Pt.z <= scale2.z) ||
-                    (cub2Pt.x <= scale1.x && cub2Pt.y <= scale1.y && cub2Pt.z <= scale1.z))
+            if(cub1Pt.x <= scale2.x && cub1Pt.y <= scale2.y && cub1Pt.z <= scale2.z)
             {
                 collided = true;
+                collisionPt = glm::vec3(obj2->m_transform.T() * glm::vec4(cub1Pt,1)); // move the collision point back into world space
+                break;
+            }
+            else if(cub2Pt.x <= scale1.x && cub2Pt.y <= scale1.y && cub2Pt.z <= scale1.z)
+            {
+                collided = true;
+                collisionPt = glm::vec3(obj1->m_transform.T() * glm::vec4(cub2Pt,1));
+                break;
             }
         }
 
@@ -163,11 +179,10 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         glm::vec3 cubSpaceSph = glm::vec3(cube->m_transform.invT() * glm::vec4(sph->getPos(),1));
         glm::vec3 cubPoint = cube->getSupport(cubSpaceSph);
         glm::vec3 dist = glm::abs(cubSpaceSph - cubPoint);
-        // second case handles when the cube is inside the sphere
-        if(glm::length(dist) <= sph->scale.x * 0.5f)// ||
-                //glm::length(cube->getPos() - sph->getPos()) <= sph->scale.x * 0.5f)
+        if(glm::length(dist) <= sph->scale.x * 0.5f)
         {
             collided = true;
+            collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
         }
 
     }
@@ -227,7 +242,13 @@ void GameObject::update(float dt)
 
 void GameObject::addForce(glm::vec3 force)
 {
-    forces += force;
+    //if (addstuff)
+    //{
+        forces += force;
+        cout << force.x << ", " << force.y << ", " << force.z << '\n';
+        //addstuff = false;
+    //}
+
 }
 
 glm::vec3 GameObject::getForce()
@@ -261,3 +282,10 @@ glm::vec3 GameObject::getScale()
 {
     return scale;
 }
+
+void GameObject::translate(glm::vec3 t)
+{
+    pos += t;
+    m_transform = Transform(pos, rot, scale);
+}
+

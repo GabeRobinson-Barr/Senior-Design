@@ -12,6 +12,7 @@ Transform::Transform(const glm::vec3 &t, const glm::vec3 &r, const glm::vec3 &s)
     SetMatrices();
 }
 
+
 void Transform::SetMatrices()
 {
     worldTransform = glm::translate(glm::mat4(1.0f), translation)
