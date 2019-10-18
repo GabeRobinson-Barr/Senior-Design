@@ -23,7 +23,7 @@ Octree::Octree(glm::vec3 min, glm::vec3 max, Octree* parent) :
     range = maxX - minX; // since each node should be a square range is equal in all directions
     midPoint = glm::vec3(midX, midY, midZ);
     // Setup the 8 children as empty nodes
-    if (range > 10)
+    if (range > 40)
     {
         //cout << minX << "," << maxX << '\n';
         nodes[xyz] = new Octree(glm::vec3(minX, minY, minZ), glm::vec3(midX, midY, midZ), this);
@@ -46,24 +46,43 @@ Octree::Octree(glm::vec3 min, glm::vec3 max, Octree* parent) :
     }
 }
 
+void Octree::update()
+{
+    std::vector<GameObject*> sceneObjs = m_Objs;
+    clear();
+    for(GameObject* obj : sceneObjs)
+    {
+        add(obj);
+    }
+}
+
+void Octree::clear()
+{
+    m_Objs.clear();
+    if(!isLeaf){
+        for(int i = 0; i < 8; i++)
+        {
+            nodes[i]->clear();
+        }
+    }
+}
+
 void Octree::add(GameObject *obj)
 {
     m_Objs.push_back(obj);
     if(!isLeaf)
     {
         glm::vec3 objPos = obj->getPos();
-        glm::vec3 objMax = objPos + (obj->getScale() / 2.f);
-        glm::vec3 objMin = objPos - (obj->getScale() / 2.f);
+        glm::vec3 objMax = objPos + obj->getScale();
+        glm::vec3 objMin = objPos - obj->getScale();
+        // this will give a buffer to place objects in nodes before they arrive in the actual node
+        // that scales with the object scale
 
         // Place objects into any overlapping nodes
         for(int idx = 0; idx < 8; idx++)
         {
-            glm::vec3 nodeMax = nodes[idx]->maxPoint;
-            glm::vec3 nodeMin = nodes[idx]->minPoint;
             // If either the min or max of all 3 dimensions falls within the node place this in the node
-            if(((objMin.x >= nodeMin.x && objMin.x <= nodeMax.x) || (objMax.x >= nodeMin.x && objMax.x <= nodeMax.x))
-                && ((objMin.y >= nodeMin.y && objMin.y <= nodeMax.y) || (objMax.y >= nodeMin.y && objMax.y <= nodeMax.y))
-                && ((objMin.z >= nodeMin.z && objMin.z <= nodeMax.z) || (objMax.z >= nodeMin.z && objMax.z <= nodeMax.z)))
+            if(nodes[idx]->contains(objMin, objMax))
             {
                 nodes[idx]->add(obj);
             }
@@ -71,15 +90,101 @@ void Octree::add(GameObject *obj)
     }
 }
 
-void Octree::move(GameObject *obj)
+bool Octree::move(GameObject *obj, glm::vec3 oldPos)
 {
-    // TODO IMPLEMENT
-    // remove object and add it again?
+    glm::vec3 objPos = obj->getPos();
+    glm::vec3 objMax = objPos + obj->getScale();
+    glm::vec3 objMin = objPos - obj->getScale();
+    // If this object is still in this node, check child nodes for it
+    if(contains(objMin, objMax))
+    {
+        if(!isLeaf) // If this is not a leaf then find the child nodes containing this object
+        {
+            objPos = oldPos; // use the old position to find the object in the tree
+            objMax = objPos + obj->getScale();
+            objMin = objPos - obj->getScale();
+
+            // Place objects into any overlapping nodes
+            for(int idx = 0; idx < 8; idx++)
+            {
+                // If a child node contains the object check if we need to move it
+                if(nodes[idx]->contains(objMin, objMax))
+                {
+                    if(nodes[idx]->move(obj, oldPos)) // if this object is no longer in one of the child nodes
+                    {
+                        remove(obj, oldPos);
+                        add(obj);
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    // if this object is no longer in this node, remove it from and re-add it to the parent node
+    // we remove this from the parent node because we dont want a duplicate when we re-add it
+    else {
+        if(parent != nullptr)
+        {
+            cout << "Moved from " << minPoint.x << ", " << minPoint.y << ", " << minPoint.z;
+            cout << " - " << maxPoint.x << ", " << maxPoint.y << ", " << maxPoint.z << '\n';
+            cout << "Bounds " << objMin.x << ", " << objMin.y << ", " << objMin.z;
+            cout << " - " << objMax.x << ", " << objMax.y << ", " << objMax.z << '\n';
+            cout << '\n';
+            return true;
+        }
+        else { // if this object is no longer in the root node delete it from the game
+            remove(obj, oldPos);
+            delete(obj);
+            return true;
+        }
+    }
 }
 
-void Octree::remove(GameObject *obj)
+void Octree::remove(GameObject *obj, glm::vec3 oldPos)
 {
+    int idx = 0;
+    // Find the object in the object vector and erase it
+    for(GameObject* currObj : m_Objs)
+    {
+        if(currObj == obj)
+        {
+            m_Objs.erase(m_Objs.begin() + idx);
+            break;
+        }
+        idx++;
+    }
+    if(!isLeaf) // if this isn't a leaf find the nodes containing the object and remove it
+    {
+        glm::vec3 objPos = oldPos; // use the old position to find the object in the tree
+        glm::vec3 objMax = objPos + obj->getScale();
+        glm::vec3 objMin = objPos - obj->getScale();
 
+        // Place objects into any overlapping nodes
+        for(int idx = 0; idx < 8; idx++)
+        {
+            // If a child node contains this object remove it from the child
+            if(nodes[idx]->contains(objMin, objMax))
+            {
+                nodes[idx]->remove(obj, oldPos);
+            }
+        }
+    }
+}
+
+bool Octree::contains(glm::vec3 minPos, glm::vec3 maxPos)
+{
+    // If either the min or max of all 3 dimensions are contained in this node then it is in the node
+    if(((minPos.x >= minPoint.x && minPos.x <= maxPoint.x) || (maxPos.x >= minPoint.x && maxPos.x <= maxPoint.x))
+        && ((minPos.y >= minPoint.y && minPos.y <= maxPoint.y) || (maxPos.y >= minPoint.y && maxPos.y <= maxPoint.y))
+        && ((minPos.z >= minPoint.z && minPos.z <= maxPoint.z) || (maxPos.z >= minPoint.z && maxPos.z <= maxPoint.z)))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 Octree* Octree::getNode(OCTREE_NODE node)
@@ -99,7 +204,7 @@ std::vector<std::pair<GameObject*,GameObject*>>& Octree::getCollisionPairs(std::
     {
         for(int i = 0; i < m_Objs.size(); i++)
         {
-            for(int j = i; j < m_Objs.size(); j++)
+            for(int j = i + 1; j < m_Objs.size(); j++)
             {
                 GameObject* obj1 = m_Objs.at(i);
                 GameObject* obj2 = m_Objs.at(j);

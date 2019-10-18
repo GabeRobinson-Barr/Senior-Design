@@ -1,6 +1,8 @@
 #include <scene/terrain.h>
 
 #include <scene/cube.h>
+#include <iostream>
+using namespace std;
 
 Terrain::Terrain() : root(Octree(-dimensions / 2.f, dimensions / 2.f))
 {}
@@ -9,26 +11,47 @@ Terrain::Terrain() : root(Octree(-dimensions / 2.f, dimensions / 2.f))
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    GameObject* obj1 = new GameObject(glm::vec3(0,10,0), glm::vec3(0,0,60), glm::vec3(2,1,1), 1, MeshType::CUBE);
+    //GameObject* obj1 = new GameObject(glm::vec3(0,10,0), glm::vec3(0,0,60), glm::vec3(2,1,1), 1, MeshType::CUBE);
     //GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(2,1,1), 1, MeshType::CUBE);
-    GameObject* obj3 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,45), glm::vec3(3,3,3), 1, MeshType::CUBE);
-    root.add(obj1);
+    //GameObject* obj3 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,45), glm::vec3(3,3,3), 1, MeshType::CUBE);
+    //root.add(obj1);
     //root.add(obj2);
-    root.add(obj3);
+    //root.add(obj3);
 
-    obj1->addForce(glm::vec3(1.0f, -1.f,0) / (16.f / 1000.f)); // adding initial force for testing
+    for(int i = 0; i < 10; i++)
+    {
+        for(int j = 0; j < 10; j++)
+        {
+            for(int k = 0; k < 10; k++)
+            {
+                GameObject* obj = new GameObject(glm::vec3(i * 10, j * 10, k * 10), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::CUBE);
+                root.add(obj);
+                if(i == 0)
+                {
+                    obj->addForce(glm::vec3(j, 0,0) / (16.f / 1000.f));
+                }
+                if(j == 0)
+                {
+                    obj->addForce(glm::vec3(0,k,0) / (16.f / 1000.f));
+                }
+            }
+        }
+    }
+
+    //`obj1->addForce(glm::vec3(1.0f, -1.f,0) / (16.f / 1000.f)); // adding initial force for testing
 
 }
 
 void Terrain::checkCollisions()
 {
-    std::vector<GameObject*> objs = root.getObjects();
-    for(int i = 0; i < objs.size(); i++)
+    //std::vector<GameObject*> objs = root.getObjects();
+    std::vector<std::pair<GameObject*, GameObject*>> objPairs;
+    root.getCollisionPairs(objPairs);
+    for(int i = 0; i < objPairs.size(); i++)
     {
-        for(int j = i + 1; j < objs.size(); j++)
-        {
-            GameObject::collide(objs.at(i), objs.at(j));
-        }
+        GameObject* obj1 = objPairs.at(i).first;
+        GameObject* obj2 = objPairs.at(i).second;
+        GameObject::collide(obj1, obj2);
     }
 
 }
@@ -39,6 +62,7 @@ void Terrain::update(float dt)
     {
         obj->update(dt);
     }
+    root.update();
 
     checkCollisions();
 }

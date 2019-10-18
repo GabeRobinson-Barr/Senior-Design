@@ -71,7 +71,7 @@ private:
     bool hasCollision = false;
     bool updated = false;
 
-    std::vector<Collider*> colliders; // List of collisions involving this object
+    //std::vector<Collider*> colliders; // List of collisions involving this object
     // RETHINK THIS/ASK PROF JANG
     glm::vec3 centerOfMass; // CoM of all sticky objects collided with this
     float connectedMass; // total mass of sticky objects

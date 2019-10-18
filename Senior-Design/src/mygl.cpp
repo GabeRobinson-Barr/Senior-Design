@@ -99,8 +99,8 @@ void MyGL::resizeGL(int w, int h)
     //*mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
                        //glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
 
-    *mp_camera = Camera(w, h, glm::vec3(10, 0, 30),
-                       glm::vec3(10,0,0), glm::vec3(0,1,0));
+    *mp_camera = Camera(w, h, glm::vec3(50, 50, 100),
+                       glm::vec3(50,50,0), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)

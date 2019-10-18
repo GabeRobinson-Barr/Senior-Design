@@ -15,7 +15,7 @@ public:
 
     std::vector<GameObject*> getObjects();
 
-    const glm::vec3 dimensions = glm::vec3(80,80,80);
+    const glm::vec3 dimensions = glm::vec3(500,500,500);
 
 
 private:
