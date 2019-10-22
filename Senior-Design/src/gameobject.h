@@ -44,7 +44,7 @@ public:
     }
 
     void update(float dt);
-    void addForce(glm::vec3 force);
+    void addForce(float force, glm::vec3 collPt);
     glm::vec3 getForce();
 
     glm::vec3 getPos();
