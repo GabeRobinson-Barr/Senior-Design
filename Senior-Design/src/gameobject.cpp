@@ -150,7 +150,6 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             glm::vec3 scale1 = glm::vec3(0.5f,0.5f,0.5f);
             glm::vec3 scale2 = glm::vec3(0.5f,0.5f,0.5f);
 
-            collisionDist = glm::vec3(0);
             if(cub1PtAbs.x <= scale2.x && cub1PtAbs.y <= scale2.y && cub1PtAbs.z <= scale2.z)
             {
                 collided = true;
@@ -194,12 +193,15 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         }
         glm::vec3 cubSpaceSph = glm::vec3(cube->m_transform.invT() * glm::vec4(sph->getPos(),1));
         glm::vec3 cubPoint = cube->getSupport(cubSpaceSph);
-        glm::vec3 dist = glm::abs(cubSpaceSph - cubPoint);
-        if(glm::length(dist) <= sph->scale.x * 0.5f)
+        glm::vec3 distVec = glm::abs(cubSpaceSph - cubPoint);
+        float dist = glm::length(distVec * cube->scale);
+
+        if(dist <= sph->scale.x * 0.5f) // divide by 2 twice once for cube and once for sph scale
         {
             collided = true;
             collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
-            glm::vec3 collisionNor = glm::normalize(cube->getPos() - sph->getPos());
+            float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
+            sph->addForce(force, collisionPt);
 
         }
 
@@ -215,6 +217,9 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
     if (geomType == CUBE)
     {
         supVec = glm::vec3(sgn(v.x)*0.5f, sgn(v.y)*0.5f, sgn(v.z)*0.5f);
+        if(abs(v.x) < 0.5f) {supVec.x = v.x;}
+        if(abs(v.y) < 0.5f) {supVec.y = v.y;}
+        if(abs(v.z) < 0.5f) {supVec.z = v.z;}
     }
     else if (geomType == SPHERE)
     {
