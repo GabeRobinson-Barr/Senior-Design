@@ -16,79 +16,6 @@ GameObject::~GameObject()
 {
 }
 
-// this is a helper function to calculate the closest point on the given simplex to the origin
-// as well as simplifying the points used to describe the simplex if necessary
-/*glm::vec3 closestSimplexPt(std::vector<glm::vec3>* W)
-{
-    glm::vec3 closest;
-    int dim = W->size();
-    // Find Closest point
-    if(dim == 1)
-    {
-        closest = W->at(0);
-    }
-    else if (dim == 2)
-    {
-        glm::vec3 a = W->at(0);
-        glm::vec3 b = W->at(1);
-        glm::vec3 lineAB = b - a;
-        // Calculate and clamp projection point
-        float t = glm::dot(-a, lineAB) / glm::dot(lineAB, lineAB);
-        if(t < 0.f) {t = 0.f;}
-        else if(t > 1.f) {t = 1.f;}
-
-        closest = a + t * lineAB;
-    }
-    else if (dim >= 3){
-        if(dim > 3) { // Erase the furthest point from the origin in the simplex
-            int farIdx = 0;
-            float farDist = glm::length(W->at(0));
-            for(int i = 1; i < dim; i++)
-            {
-                float thisDist = glm::length(W->at(i));
-                if(thisDist > farDist)
-                {
-                    farDist = thisDist;
-                    farIdx = i;
-                }
-            }
-            W->erase(W->begin() + farIdx);
-        }
-        // Calculate the closest point on a plane
-        float minDist = glm::length(W->at(0));
-        closest = W->at(0);
-        for(int i = 0; i < dim; i++)
-        {
-            glm::vec3 a = W->at(i);
-            glm::vec3 b = W->at((i + 1) % dim);
-            glm::vec3 c = W->at((i + 2) % dim);
-            glm::vec3 lineAB = b - a;
-            glm::vec3 lineBC = c - b;
-            glm::vec3 planeNor = glm::cross(lineAB,lineBC);
-            planeNor = glm::normalize(planeNor);
-            float t = glm::abs(glm::dot(planeNor, -a) - glm::length(a));
-            if(t < minDist){
-                minDist = t;
-                closest = -t * planeNor;
-            }
-
-        }
-        glm::vec3 a = W->at(0);
-        glm::vec3 b = W->at(1);
-        glm::vec3 c = W->at(2);
-        glm::vec3 lineAB = b - a;
-        glm::vec3 lineBC = c - b;
-        glm::vec3 planeNor = glm::cross(lineAB, lineBC);
-        planeNor = glm::normalize(planeNor);
-        float t = glm::abs(glm::dot(planeNor, -a) - glm::length(a));
-        closest = -t * planeNor;
-
-    }
-
-    return closest;
-}*/
-
-
 void GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
     bool collided = false;
@@ -108,14 +35,15 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             obj2->addForce(force, collisionPt);
             // Move the objects away from each other by the difference in their distance to the collision distance
             // so that they dont collide on multiple frames
-            obj1->translate((collisionDist - glm::length(diff)) * glm::normalize(obj1->getPos() - collisionPt));
-            obj2->translate((collisionDist - glm::length(diff)) * glm::normalize(obj2->getPos() - collisionPt));
+            glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
+            obj1->translate(scl * 1.001f * (collisionDist - glm::length(diff)) * glm::normalize(obj1->getPos() - collisionPt));
+            obj2->translate(scl * 1.001f * (collisionDist - glm::length(diff)) * glm::normalize(obj2->getPos() - collisionPt));
         }
     }
     else if (obj1->geomType == CUBE && obj2->geomType == CUBE)
     {
-        //std::vector<int> collisionIdx = std::vector<int>();
-        glm::vec3 collisionDist;
+        std::vector<glm::vec3> collisionPts = std::vector<glm::vec3>();
+        std::vector<glm::vec3> collisionPts2 = std::vector<glm::vec3>();
         for (int i = 0; i < 8; i++)
         {
             int idx = i;
@@ -153,27 +81,34 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             if(cub1PtAbs.x <= scale2.x && cub1PtAbs.y <= scale2.y && cub1PtAbs.z <= scale2.z)
             {
                 collided = true;
-                collisionPt = glm::vec3(obj2->m_transform.T() * glm::vec4(cub1Pt,1)); // move the collision point back into world space
-                collisionDist = scale2 - cub1Pt;
-                break;
+                collisionPts.push_back(glm::vec3(obj2->m_transform.T() * glm::vec4(cub1Pt,1))); // move the collision point back into world space
             }
-            else if(cub2PtAbs.x <= scale1.x && cub2PtAbs.y <= scale1.y && cub2PtAbs.z <= scale1.z)
+            if(cub2PtAbs.x <= scale1.x && cub2PtAbs.y <= scale1.y && cub2PtAbs.z <= scale1.z)
             {
                 collided = true;
-                collisionPt = glm::vec3(obj1->m_transform.T() * glm::vec4(cub2Pt,1));
-                collisionDist = scale1 - cub2Pt;
-                break;
+                collisionPts.push_back(glm::vec3(obj1->m_transform.T() * glm::vec4(cub2Pt,1)));
             }
         }
         if(collided)
         {
             float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
+            for(glm::vec3 v : collisionPts)
+            {
+                collisionPt += v;
+            }
+            collisionPt = collisionPt / (float)collisionPts.size();
             obj1->addForce(force, collisionPt);
             obj2->addForce(force, collisionPt);
             // Move the objects away from each other by the difference in their distance to the collision distance
             // so that they dont collide on multiple frames
-            obj1->translate((collisionDist) * glm::normalize(obj1->getPos() - collisionPt));
-            obj2->translate((collisionDist) * glm::normalize(obj2->getPos() - collisionPt));
+
+            glm::vec3 obj1Nor = glm::vec3(obj1->m_transform.rotMat() * glm::vec4(obj1->getCubeNor(obj1->getPos() - collisionPt),1));
+            glm::vec3 obj2Nor = glm::vec3(obj2->m_transform.rotMat() * glm::vec4(obj2->getCubeNor(obj2->getPos() - collisionPt),1));
+            float collisionDist = glm::length(obj1Nor * ((obj1->scale * 0.5f) - glm::abs(obj1->getPos() - collisionPt)));
+            glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
+            obj1->translate(scl * 1.001f * (collisionDist) * obj1->getCubeNor(obj1->getPos() - collisionPt));
+            collisionDist = glm::length(obj2Nor * ((obj2->scale * 0.5f) - glm::abs(obj2->getPos() - collisionPt)));
+            obj2->translate(scl * 1.001f * (collisionDist) * obj2->getCubeNor(obj2->getPos() - collisionPt));
         }
 
     }
@@ -202,7 +137,13 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
             float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
             sph->addForce(force, collisionPt);
+            cube->addForce(force, collisionPt);
 
+            float diff = (sph->scale.x * 0.5f) - dist;
+            glm::vec3 scl = (sph->scale + cube->scale) * 0.5f;
+            sph->translate(scl * 1.001f * diff * glm::normalize(sph->getPos() - collisionPt));
+            glm::vec3 cubNor = glm::vec3(cube->m_transform.rotMat() * glm::vec4(cube->getCubeNor(-cubPoint),1));
+            cube->translate(scl * 1.001f * diff * cubNor);
         }
 
     }
@@ -263,8 +204,35 @@ void GameObject::update(float dt)
     hasCollision = false;
 }
 
+glm::vec3 GameObject::getCubeNor(glm::vec3 vec)
+{
+    if(geomType == CUBE)
+    {
+        glm::vec3 norVec = glm::vec3(1.f * sgn(vec.x),0,0);
+        float maxComp = glm::abs(vec.x);
+        for(int i = 1; i < 3; i++)
+        {
+            if(glm::abs(vec[i]) - maxComp <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
+            {
+                norVec[i] = 1.f * sgn(vec[i]);
+            }
+            else if(glm::abs(vec[i]) > maxComp)
+            {
+                norVec = glm::vec3(0);
+                norVec[i] = 1.f * sgn(vec[i]);
+                maxComp = glm::abs(vec[i]);
+            }
+        }
+        return glm::normalize(norVec);
+    }
+    else {
+        return glm::normalize(vec);
+    }
+}
+
 void GameObject::addForce(float force, glm::vec3 collPt)
 {
+    cout << "collided" << '\n';
     if(geomType == MeshType::SPHERE)
     {
         // apply the force to both objects along the vector from the collision point to their center (for spheres)
@@ -274,22 +242,7 @@ void GameObject::addForce(float force, glm::vec3 collPt)
     else if(geomType == MeshType::CUBE)// && addstuff)
     {
         glm::vec3 diffVec = glm::normalize(getPos() - collPt);
-        glm::vec3 norVec = glm::vec3(1.f * sgn(diffVec.x),0,0);
-        float maxComp = glm::abs(diffVec.x);
-        for(int i = 1; i < 3; i++)
-        {
-            if(glm::abs(diffVec[i] - maxComp) <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
-            {
-                norVec[i] = 1.f * sgn(diffVec[i]);
-            }
-            else if(glm::abs(diffVec[i]) > maxComp)
-            {
-                norVec = glm::vec3(0);
-                norVec[i] = 1.f * sgn(diffVec[i]);
-                maxComp = glm::abs(diffVec[i]);
-            }
-        }
-        norVec = glm::normalize(norVec);
+        glm::vec3 norVec = getCubeNor(diffVec);
         glm::vec3 forceVec = (force * norVec) / (mass * 16.f / 1000.f);
         forces += forceVec;
         addstuff = false;
