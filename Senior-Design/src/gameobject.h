@@ -44,8 +44,8 @@ public:
     }
 
     void update(float dt);
-    glm::vec3 getCubeNor(glm::vec3 vec);
-    void addForce(float force, glm::vec3 collPt);
+    glm::vec3 getNor(glm::vec3 vec);
+    void addForce(glm::vec3 force, glm::vec3 collPt);
     glm::vec3 getForce();
 
     glm::vec3 getPos();
@@ -64,9 +64,12 @@ private:
     glm::vec3 vel;
     glm::vec3 rotVel;
     float mass;
+    glm::vec3 moment;
+    glm::mat3 tensor;
     float drag; // drag coefficient responsible for slowing movement
     float angDrag; // angular drag coefficient responsible for slowing rotation
     glm::vec3 forces; // Total forces acting on this object
+    glm::vec3 torque;
 
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space

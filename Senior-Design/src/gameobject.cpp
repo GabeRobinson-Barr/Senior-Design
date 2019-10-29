@@ -5,11 +5,25 @@ using namespace std;
 GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type) :
     pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)),
     vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(1.f), angDrag(1.f),
-    forces(glm::vec3(0.f)), geomType(type)
+    forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type)
 {
     //TODO:
     //CREATE COLLIDER
     //create matrices
+    if(geomType == SPHERE)
+    {
+        moment = glm::vec3((2.f/5.f) * mass * pow(scale.x / 2.f,2.f));
+        tensor = glm::mat3(1.f);
+    }
+    else if (geomType == CUBE)
+    {
+        moment = glm::vec3((1.f/12.f) * mass * (pow(scale.y,2.f) + pow(scale.z,2.f)),
+                           (1.f/12.f) * mass * (pow(scale.x,2.f) + pow(scale.z,2.f)),
+                           (1.f/12.f) * mass * (pow(scale.x,2.f) + pow(scale.y,2.f)));
+        tensor = glm::mat3(pow(scale.y,2.f) + pow(scale.z,2.f), -scale.x * scale.y, -scale.x * scale.z,
+                           -scale.y * scale.x, pow(scale.x,2.f) + pow(scale.z,2.f), -scale.y * scale.z,
+                           -scale.z * scale.x, -scale.z * scale.y, pow(scale.x,2.f) + pow(scale.y,2.f));
+    }
 }
 
 GameObject::~GameObject()
@@ -30,14 +44,21 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             collided = true;
             // find the point of collision and the magnitude of force and apply it to both objects
             collisionPt = obj2->getPos() + (glm::normalize(obj1->getPos() - obj2->getPos()) * obj2->scale * 0.5f);
-            float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
-            obj1->addForce(force, collisionPt);
-            obj2->addForce(force, collisionPt);
+            glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
+            glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
+            glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
+                    (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass))) * obj2Nor;
+            glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
+                                 (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass))) * obj1Nor;
+            glm::vec3 force1 = endVel1 - obj1->vel;
+            glm::vec3 force2 = endVel2 - obj2->vel;
+            obj1->addForce(force1, collisionPt);
+            obj2->addForce(force2, collisionPt);
             // Move the objects away from each other by the difference in their distance to the collision distance
             // so that they dont collide on multiple frames
             glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
-            obj1->translate(scl * 1.001f * (collisionDist - glm::length(diff)) * glm::normalize(obj1->getPos() - collisionPt));
-            obj2->translate(scl * 1.001f * (collisionDist - glm::length(diff)) * glm::normalize(obj2->getPos() - collisionPt));
+            obj1->translate(scl * 1.1f * (collisionDist - glm::length(diff)) * obj2Nor);
+            obj2->translate(scl * 1.1f * (collisionDist - glm::length(diff)) * obj1Nor);
         }
     }
     else if (obj1->geomType == CUBE && obj2->geomType == CUBE)
@@ -91,24 +112,29 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         }
         if(collided)
         {
-            float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
             for(glm::vec3 v : collisionPts)
             {
                 collisionPt += v;
             }
             collisionPt = collisionPt / (float)collisionPts.size();
-            obj1->addForce(force, collisionPt);
-            obj2->addForce(force, collisionPt);
-            // Move the objects away from each other by the difference in their distance to the collision distance
-            // so that they dont collide on multiple frames
+            glm::vec3 obj1Nor = obj1->getNor(obj1->getPos() - collisionPt);
+            glm::vec3 obj2Nor = obj2->getNor(obj2->getPos() - collisionPt);
+            glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
+                    (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
+            glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
+                                 (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
+            glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * obj2Nor;
+            glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * obj1Nor;
+            obj1->addForce(force1, collisionPt);
+            obj2->addForce(force2, collisionPt);
 
-            glm::vec3 obj1Nor = glm::vec3(obj1->m_transform.rotMat() * glm::vec4(obj1->getCubeNor(obj1->getPos() - collisionPt),1));
-            glm::vec3 obj2Nor = glm::vec3(obj2->m_transform.rotMat() * glm::vec4(obj2->getCubeNor(obj2->getPos() - collisionPt),1));
-            float collisionDist = glm::length(obj1Nor * ((obj1->scale * 0.5f) - glm::abs(obj1->getPos() - collisionPt)));
+            // Move the objects away from each other by the difference in their distance to the collision distance
+            // so that they dont collide on multiple frame
+            float collisionDist = glm::length(obj1Nor * ((obj1->scale * 0.5f) - glm::abs(obj1->getPos() - collisionPt))) +
+                    glm::length(obj2Nor * ((obj2->scale * 0.5f) - glm::abs(obj2->getPos() - collisionPt)));
             glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
-            obj1->translate(scl * 1.001f * (collisionDist) * obj1->getCubeNor(obj1->getPos() - collisionPt));
-            collisionDist = glm::length(obj2Nor * ((obj2->scale * 0.5f) - glm::abs(obj2->getPos() - collisionPt)));
-            obj2->translate(scl * 1.001f * (collisionDist) * obj2->getCubeNor(obj2->getPos() - collisionPt));
+            obj1->translate(scl * 1.1f * (collisionDist) * (obj1->getPos() - obj2->getPos()));
+            obj2->translate(scl * 1.1f * (collisionDist) * (obj2->getPos() - obj1->getPos()));
         }
 
     }
@@ -135,15 +161,17 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         {
             collided = true;
             collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
-            float force = glm::length((obj2->vel * obj2->mass) + (obj1->vel * obj1->mass));
-            sph->addForce(force, collisionPt);
-            cube->addForce(force, collisionPt);
+            glm::vec3 obj1Nor = obj1->getNor(obj1->getPos() - collisionPt);
+            glm::vec3 obj2Nor = obj2->getNor(obj2->getPos() - collisionPt);
+            glm::vec3 force1 = glm::length(obj2->vel * obj2->mass) * obj2Nor;
+            glm::vec3 force2 = glm::length(obj1->vel * obj1->mass) * obj1Nor;
+            obj1->addForce(force1, collisionPt);
+            obj2->addForce(force2, collisionPt);
 
             float diff = (sph->scale.x * 0.5f) - dist;
             glm::vec3 scl = (sph->scale + cube->scale) * 0.5f;
-            sph->translate(scl * 1.001f * diff * glm::normalize(sph->getPos() - collisionPt));
-            glm::vec3 cubNor = glm::vec3(cube->m_transform.rotMat() * glm::vec4(cube->getCubeNor(-cubPoint),1));
-            cube->translate(scl * 1.001f * diff * cubNor);
+            obj1->translate(scl * 1.1f * diff * obj2Nor);
+            obj2->translate(scl * 1.1f * diff * obj1Nor);
         }
 
     }
@@ -189,10 +217,21 @@ void GameObject::update(float dt)
 {
     glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
 
+    if(hasCollision)
+    {
+        //cout << "position" << pos.x << "," << pos.y << "," << pos.z << '\n';
+    }
     n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
     n_Vel = vel + (forces / mass) * dt;
-    n_Rot = rot;
-    n_RotVel = rotVel;
+
+    glm::vec3 rotMoment = moment;
+    if(geomType == CUBE)
+    {
+        rotMoment = glm::vec3(m_transform.rotMat() * glm::vec4(moment,1));
+    }
+    n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
+    n_RotVel = rotVel + (torque / rotMoment) * dt;
+
 
     pos = n_Pos;
     vel = n_Vel;
@@ -201,18 +240,20 @@ void GameObject::update(float dt)
 
     m_transform = Transform(pos, rot, scale);
     forces = glm::vec3(0.f); // reset the forces
+    torque = glm::vec3(0.f);
     hasCollision = false;
 }
 
-glm::vec3 GameObject::getCubeNor(glm::vec3 vec)
+glm::vec3 GameObject::getNor(glm::vec3 vec)
 {
     if(geomType == CUBE)
     {
-        glm::vec3 norVec = glm::vec3(1.f * sgn(vec.x),0,0);
+        glm::vec3 norVec = glm::vec3(glm::inverse(m_transform.rotMat()) * glm::vec4(vec,1));
+        norVec = glm::vec3(1.f * sgn(norVec.x),0,0);
         float maxComp = glm::abs(vec.x);
         for(int i = 1; i < 3; i++)
         {
-            if(glm::abs(vec[i]) - maxComp <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
+            if(glm::abs(glm::abs(vec[i]) - maxComp) <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
             {
                 norVec[i] = 1.f * sgn(vec[i]);
             }
@@ -223,6 +264,7 @@ glm::vec3 GameObject::getCubeNor(glm::vec3 vec)
                 maxComp = glm::abs(vec[i]);
             }
         }
+        norVec = glm::vec3(m_transform.rotMat() * glm::vec4(norVec,1));
         return glm::normalize(norVec);
     }
     else {
@@ -230,22 +272,31 @@ glm::vec3 GameObject::getCubeNor(glm::vec3 vec)
     }
 }
 
-void GameObject::addForce(float force, glm::vec3 collPt)
+void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
 {
     cout << "collided" << '\n';
     if(geomType == MeshType::SPHERE)
     {
         // apply the force to both objects along the vector from the collision point to their center (for spheres)
-        glm::vec3 forceVec = (force * glm::normalize(getPos() - collPt)) / (mass * 16.f / 1000.f);
-        forces += forceVec;
+        glm::vec3 arm = getPos() - collPt;
+        glm::vec3 norVec = getNor(arm);
+        //glm::vec3 forceVec = (glm::length(force) * norVec) / (16.f / 1000.f);
+        glm::vec3 forceVec = force / (16.f / 1000.f);
+        forces += forceVec;//forceVec;
+        torque = glm::cross(force, arm) / (16.f / 1000.f);
+        //cout << "sphforce: " << forceVec.x << "," << forceVec.y << "," << forceVec.z << '\n';
     }
     else if(geomType == MeshType::CUBE)// && addstuff)
     {
-        glm::vec3 diffVec = glm::normalize(getPos() - collPt);
-        glm::vec3 norVec = getCubeNor(diffVec);
-        glm::vec3 forceVec = (force * norVec) / (mass * 16.f / 1000.f);
-        forces += forceVec;
+        glm::vec3 arm = getPos() - collPt;
+        glm::vec3 diffVec = glm::normalize(arm);
+        glm::vec3 norVec = getNor(diffVec);
+        //glm::vec3 forceVec = (glm::length(force) * norVec) / (16.f / 1000.f);
+        glm::vec3 forceVec = force / (16.f / 1000.f);
+        forces += forceVec;//forceVec;
         addstuff = false;
+        torque = glm::cross(force, arm) / (16.f / 1000.f);
+        //cout << "cubeforce: " << forceVec.x << "," << forceVec.y << "," << forceVec.z << '\n';
     }
     else {
         // UNSUPPORTED SHAPES
