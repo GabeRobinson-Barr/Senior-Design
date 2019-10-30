@@ -1,6 +1,7 @@
 debug/main.o
 debug/mainwindow.o
 debug/mygl.o
+debug/player.o
 debug/octree.o
 debug/sphere.o
 debug/shaderprogram.o

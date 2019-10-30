@@ -11,13 +11,13 @@ Terrain::Terrain() : root(Octree(-dimensions / 2.f, dimensions / 2.f))
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    //GameObject* obj1 = new GameObject(glm::vec3(0,1,0), glm::vec3(0,0,60), glm::vec3(1,1,1), 1, MeshType::CUBE);
-    //GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::CUBE);
+    GameObject* obj1 = new GameObject(glm::vec3(0,1,0), glm::vec3(0,0,60), glm::vec3(1,1,1), 1, MeshType::CUBE);
+    GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::CUBE);
     //GameObject* obj3 = new GameObject(glm::vec3(20,0,0), glm::vec3(0,0,45), glm::vec3(3,3,3), 3, MeshType::SPHERE);
-    //root.add(obj1);
-    //root.add(obj2);
+    root.add(obj1);
+    root.add(obj2);
     //root.add(obj3);
-    int s = 0;
+    /*int s = 0;
     for(int i = 0; i < 10; i++)
     {
         for(int j = 0; j < 10; j++)
@@ -46,7 +46,7 @@ void Terrain::CreateTestScene()
                 }
             }
         }
-    }
+    }*/
 
     //obj1->addForce(glm::vec3(2.f,0,0), obj1->getPos() + glm::vec3(-1,-1,0)); // adding initial force for testing
     //obj3->addForce(glm::vec3(-12.f,0,0), obj3->getPos() + glm::vec3(1,0,0));

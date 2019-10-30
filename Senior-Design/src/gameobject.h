@@ -17,7 +17,7 @@ class GameObject
 {
 public:
     GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type);
-    ~GameObject();
+    virtual ~GameObject();
 
     static void collide(GameObject* obj1, GameObject* obj2);
 
@@ -43,9 +43,9 @@ public:
         }
     }
 
-    void update(float dt);
+    virtual void update(float dt);
     glm::vec3 getNor(glm::vec3 vec);
-    void addForce(glm::vec3 force, glm::vec3 collPt);
+    virtual void addForce(glm::vec3 force, glm::vec3 collPt);
     glm::vec3 getForce();
 
     glm::vec3 getPos();
@@ -56,7 +56,7 @@ public:
     const MeshType geomType;
     bool addstuff = true; // used for debugging collision forces
 
-private:
+protected:
     glm::vec3 scale;
     glm::vec3 pos;
     glm::vec3 rot;
@@ -70,6 +70,7 @@ private:
     float angDrag; // angular drag coefficient responsible for slowing rotation
     glm::vec3 forces; // Total forces acting on this object
     glm::vec3 torque;
+    bool isSticky;
 
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space

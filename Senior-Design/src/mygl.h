@@ -9,6 +9,7 @@
 #include <scene/worldaxes.h>
 #include "camera.h"
 #include <scene/terrain.h>
+#include "player.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -37,6 +38,7 @@ private:
                               // from within a mouse move event after reading the mouse movement so that
                               // your mouse stays within the screen bounds and is always read.
     bool paused;
+    Player* player1;
 
 public:
     explicit MyGL(QWidget *parent = 0);

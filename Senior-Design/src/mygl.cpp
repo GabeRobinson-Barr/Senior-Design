@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_geomSphere(new Sphere(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain()), paused(false)
+      mp_camera(new Camera()), mp_terrain(new Terrain()), paused(false), player1(new Player(&mp_camera))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -99,8 +99,8 @@ void MyGL::resizeGL(int w, int h)
     //*mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
                        //glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
 
-    *mp_camera = Camera(w, h, glm::vec3(50, 50, 100),
-                       glm::vec3(10,0,0), glm::vec3(0,1,0));
+    //*mp_camera = Camera(w, h, glm::vec3(50, 50, 100),
+    //                   glm::vec3(10,0,0), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -119,9 +119,10 @@ void MyGL::timerUpdate()
     if(!paused)
     {
         mp_terrain->update((float)timer.interval() / 1000.f);
+        player1->update((float)timer.interval() / 1000.f);
     }
 
-    float amount = 2.0f;
+    /*float amount = 2.0f;
     if (key_Right) {
         mp_camera->RotateAboutUp(-amount);
     }
@@ -158,7 +159,7 @@ void MyGL::timerUpdate()
     if (key_E) {
         mp_camera->TranslateAlongUp(amount);
     }
-    mp_camera->RecomputeAttributes();
+    mp_camera->RecomputeAttributes();*/
 
     update();
 
@@ -210,11 +211,6 @@ void MyGL::GLDrawScene()
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-
-    float amount = 2.0f;
-    if(e->modifiers() & Qt::ShiftModifier){
-        amount = 10.0f;
-    }
     // http://doc.qt.io/qt-5/qt.html#Key-enum
     // This could all be much more efficient if a switch
     // statement were used, but I really dislike their
@@ -222,74 +218,22 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     // chain of if statements instead
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
-    } else if (e->key() == Qt::Key_Right) {
-        key_Right = true;
-    } else if (e->key() == Qt::Key_Left) {
-        key_Left = true;
-    } else if (e->key() == Qt::Key_Up) {
-        key_Up = true;
-    } else if (e->key() == Qt::Key_Down) {
-        key_Down = true;
-    } else if (e->key() == Qt::Key_1) {
-        key_1 = true;
-    } else if (e->key() == Qt::Key_2) {
-        key_2 = true;
-    } else if (e->key() == Qt::Key_W) {
-        key_W = true;
-    } else if (e->key() == Qt::Key_S) {
-        key_S = true;
-    } else if (e->key() == Qt::Key_D) {
-        key_D = true;
-    } else if (e->key() == Qt::Key_A) {
-        key_A = true;
-    } else if (e->key() == Qt::Key_Q) {
-        key_Q = true;
-    } else if (e->key() == Qt::Key_E) {
-        key_E = true;
-    } else if (e->key() == Qt::Key_R) {
-        *mp_camera = Camera(this->width(), this->height());
-    } else if (e->key() == Qt::Key_Space) {
+    } else if (e->key() == Qt::Key_P) {
         paused = !paused;
     }
+    else {
+        player1->keyPressed(e);
+    }
+
 }
 
 void MyGL::keyReleaseEvent(QKeyEvent *e)
 {
 
-    float amount = 2.0f;
-    if(e->modifiers() & Qt::ShiftModifier){
-        amount = 10.0f;
-    }
-    // http://doc.qt.io/qt-5/qt.html#Key-enum
-    // This could all be much more efficient if a switch
-    // statement were used, but I really dislike their
-    // syntax so I chose to be lazy and use a long
-    // chain of if statements instead
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
-    } else if (e->key() == Qt::Key_Right) {
-        key_Right = false;
-    } else if (e->key() == Qt::Key_Left) {
-        key_Left = false;
-    } else if (e->key() == Qt::Key_Up) {
-        key_Up = false;
-    } else if (e->key() == Qt::Key_Down) {
-        key_Down = false;
-    } else if (e->key() == Qt::Key_1) {
-        key_1 = false;
-    } else if (e->key() == Qt::Key_2) {
-        key_2 = false;
-    } else if (e->key() == Qt::Key_W) {
-        key_W = false;
-    } else if (e->key() == Qt::Key_S) {
-        key_S = false;
-    } else if (e->key() == Qt::Key_D) {
-        key_D = false;
-    } else if (e->key() == Qt::Key_A) {
-        key_A = false;
-    } else if (e->key() == Qt::Key_Q) {
-        key_Q = false;
-    } else if (e->key() == Qt::Key_E) {
-        key_E = false;
+    }
+    else {
+        player1->keyReleased(e);
     }
 }

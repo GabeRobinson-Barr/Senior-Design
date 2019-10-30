@@ -5,6 +5,7 @@ SOURCES += \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
+    $$PWD/player.cpp \
     $$PWD/scene/octree.cpp \
     $$PWD/scene/sphere.cpp \
     $$PWD/shaderprogram.cpp \
@@ -24,6 +25,7 @@ HEADERS += \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
+    $$PWD/player.h \
     $$PWD/scene/octree.h \
     $$PWD/scene/sphere.h \
     $$PWD/shaderprogram.h \

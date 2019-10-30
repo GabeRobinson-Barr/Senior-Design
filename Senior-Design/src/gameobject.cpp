@@ -10,6 +10,7 @@ GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass
     //TODO:
     //CREATE COLLIDER
     //create matrices
+    isSticky = false;
     if(geomType == SPHERE)
     {
         moment = glm::vec3((2.f/5.f) * mass * pow(scale.x / 2.f,2.f));
