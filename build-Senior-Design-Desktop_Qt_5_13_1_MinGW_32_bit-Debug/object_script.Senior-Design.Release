@@ -1,3 +1,4 @@
+release/connectedobject.o
 release/main.o
 release/mainwindow.o
 release/mygl.o
@@ -15,7 +16,6 @@ release/openglcontext.o
 release/terrain.o
 release/worldaxes.o
 release/gameobject.o
-release/collider.o
 release/qrc_glsl.o
 release/moc_mainwindow.o
 release/moc_mygl.o

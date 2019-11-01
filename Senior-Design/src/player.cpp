@@ -19,6 +19,7 @@ Player::~Player(){
 
 void Player::update(float dt)
 {
+    updated = false;
     if(pos.y <= 0.f)
     {
         onFloor = true;
@@ -46,10 +47,12 @@ void Player::update(float dt)
     {
         translate(glm::normalize(moveDir) * moveSpd * dt);
     }
+    updateTransform();
     if(onFloor && jumped)
     {
         glm::vec3 jumpPt = pos + -cam->up;
         addForce(cam->up * jumpStr, jumpPt);
+
         if(floorObj != nullptr)
         {
             floorObj->addForce(-cam->up * jumpStr, jumpPt);
@@ -70,9 +73,9 @@ void Player::update(float dt)
     cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(0,1,0.5f,1));
     cam->ref = cam->eye + glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
     cam->RecomputeAttributes();
-    cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
-    cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
-    cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
+    //cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
+    //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
+    //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
     onFloor = false;
     jumped = false;
 }

@@ -5,7 +5,8 @@ using namespace std;
 GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type) :
     pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)),
     vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(1.f), angDrag(1.f),
-    forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type)
+    forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type),
+    connectedComp(nullptr)
 {
     //TODO:
     //CREATE COLLIDER
@@ -15,6 +16,7 @@ GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass
     {
         moment = glm::vec3((2.f/5.f) * mass * pow(scale.x / 2.f,2.f));
         tensor = glm::mat3(1.f);
+        isSticky = true;
     }
     else if (geomType == CUBE)
     {
@@ -47,19 +49,65 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
             collisionPt = obj2->getPos() + (glm::normalize(obj1->getPos() - obj2->getPos()) * obj2->scale * 0.5f);
             glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
             glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
-            glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
-                    (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
-            glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
-                                 (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
-            glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
-            glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
-            obj1->addForce(force1, collisionPt);
-            obj2->addForce(force2, collisionPt);
-            // Move the objects away from each other by the difference in their distance to the collision distance
-            // so that they dont collide on multiple frames
-            glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
-            obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
-            obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+            glm::vec3 force1;
+            glm::vec3 force2;
+            if (!obj1->isSticky && !obj2->isSticky)
+            {
+                glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
+                        (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
+                glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
+                                     (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
+                force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
+                force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
+                obj1->addForce(force1, collisionPt);
+                obj2->addForce(force2, collisionPt);
+                // Move the objects away from each other by the difference in their distance to the collision distance
+                // so that they dont collide on multiple frames
+                glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
+                obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
+                obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+            }
+            else {
+                float mass1 = obj1->mass;
+                float mass2 = obj2->mass;
+
+                if(obj1->connectedComp == nullptr && obj2->connectedComp == nullptr)
+                {
+                    ConnectedObject* connect = new ConnectedObject();
+                    connect->addObj(obj1);
+                    connect->addObj(obj2);
+                }
+                else if(obj1->connectedComp != nullptr)
+                {
+                    mass1 = obj1->connectedComp->getMass();
+                    if(obj2->connectedComp != nullptr)
+                    {
+                        mass2 = obj2->connectedComp->getMass();
+                        if(ConnectedObject::canCollide(obj1, obj2))
+                        {
+                            ConnectedObject::mergeConnectedObjs(obj1->connectedComp, obj2->connectedComp);
+                        }
+                        else{
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        obj1->connectedComp->addObj(obj2);
+                    }
+                }
+                else
+                {
+                    mass2 = obj2->connectedComp->getMass();
+                    obj2->connectedComp->addObj(obj1);
+                }
+                glm::vec3 endForce = ((obj1->vel * mass1) + (obj2->vel * mass2));
+                collisionPt = (glm::length(obj1->vel * mass1) * obj1->getPos()) - (glm::length(obj2->vel * mass2) * obj2->getPos());
+                // Apply the added force to the component
+                glm::vec3 force = endForce - (obj1->connectedComp->mass * obj1->connectedComp->vel);
+                // using the positions because we are adding them to the connected object and it doesnt rotate otherwise
+                obj1->connectedComp->addForce(force, collisionPt);
+            } // end sticky collision logic
         }
     }
     else if (obj1->geomType == CUBE && obj2->geomType == CUBE)
@@ -113,29 +161,73 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         }
         if(collided)
         {
-            for(glm::vec3 v : collisionPts)
+            if(!obj1->isSticky && !obj2->isSticky)
             {
-                collisionPt += v;
-            }
-            collisionPt = collisionPt / (float)collisionPts.size();
-            glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
-            glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
-            glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
-                    (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
-            glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
-                                 (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
-            glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
-            glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
-            obj1->addForce(force1, collisionPt);
-            obj2->addForce(force2, collisionPt);
+                for(glm::vec3 v : collisionPts)
+                {
+                    collisionPt += v;
+                }
+                collisionPt = collisionPt / (float)collisionPts.size();
+                glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
+                glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
+                glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
+                        (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
+                glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
+                                     (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
+                glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
+                glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
+                obj1->addForce(force1, collisionPt);
+                obj2->addForce(force2, collisionPt);
 
-            // Move the objects away from each other by the difference in their distance to the collision distance
-            // so that they dont collide on multiple frame
-            //float collisionDist = max(glm::length(obj1->getSupport(collisionPt - obj1->getPos()) - (collisionPt - obj1->getPos())),
-            //        glm::length(obj2->getSupport(collisionPt - obj2->getPos()) - (collisionPt - obj2->getPos())));
-            glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
-            obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
-            obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+                // Move the objects away from each other by the difference in their distance to the collision distance
+                // so that they dont collide on multiple frame
+                //float collisionDist = max(glm::length(obj1->getSupport(collisionPt - obj1->getPos()) - (collisionPt - obj1->getPos())),
+                //        glm::length(obj2->getSupport(collisionPt - obj2->getPos()) - (collisionPt - obj2->getPos())));
+                glm::vec3 scl = (obj1->scale + obj2->scale) * 0.5f;
+                obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
+                obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+            }
+            else {
+                float mass1 = obj1->mass;
+                float mass2 = obj2->mass;
+
+                if(obj1->connectedComp == nullptr && obj2->connectedComp == nullptr)
+                {
+                    ConnectedObject* connect = new ConnectedObject();
+                    connect->addObj(obj1);
+                    connect->addObj(obj2);
+                }
+                else if(obj1->connectedComp != nullptr)
+                {
+                    mass1 = obj1->connectedComp->getMass();
+                    if(obj2->connectedComp != nullptr)
+                    {
+                        mass2 = obj2->connectedComp->getMass();
+                        if(ConnectedObject::canCollide(obj1, obj2))
+                        {
+                            ConnectedObject::mergeConnectedObjs(obj1->connectedComp, obj2->connectedComp);
+                        }
+                        else{
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        obj1->connectedComp->addObj(obj2);
+                    }
+                }
+                else
+                {
+                    mass2 = obj2->connectedComp->getMass();
+                    obj2->connectedComp->addObj(obj1);
+                }
+                glm::vec3 endForce = ((obj1->vel * mass1) + (obj2->vel * mass2));
+                collisionPt = (glm::length(obj1->vel * mass1) * obj1->getPos()) - (glm::length(obj2->vel * mass2) * obj2->getPos());
+                // Apply the added force to the component
+                glm::vec3 force = endForce - (obj1->connectedComp->mass * obj1->connectedComp->vel);
+                // using the positions because we are adding them to the connected object and it doesnt rotate otherwise
+                obj1->connectedComp->addForce(force, collisionPt);
+            } // end sticky collision logic
         }
 
     }
@@ -161,22 +253,66 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         if(dist <= sph->scale.x * 0.5f) // divide by 2 twice once for cube and once for sph scale
         {
             collided = true;
-            collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
-            glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
-            glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
-            glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
-                    (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
-            glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
-                                 (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
-            glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
-            glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
-            obj1->addForce(force1, collisionPt);
-            obj2->addForce(force2, collisionPt);
+            if(!obj1->isSticky && !obj2->isSticky)
+            {
+                collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
+                glm::vec3 obj1Nor = obj1->getNor(collisionPt - obj1->getPos());
+                glm::vec3 obj2Nor = obj2->getNor(collisionPt - obj2->getPos());
+                glm::vec3 endVel1 = ((obj1->vel * (obj1->mass - obj2->mass)/(obj1->mass + obj2->mass)) +
+                        (obj2->vel * (obj2->mass * 2.f) / (obj1->mass + obj2->mass)));
+                glm::vec3 endVel2 = ((obj1->vel * (obj1->mass * 2.f)/(obj1->mass + obj2->mass)) +
+                                     (obj2->vel * (obj2->mass - obj1->mass) / (obj1->mass + obj2->mass)));
+                glm::vec3 force1 = glm::length(endVel1 - obj1->vel) * glm::normalize(endVel1 + obj2Nor) * obj1->mass;
+                glm::vec3 force2 = glm::length(endVel2 - obj2->vel) * glm::normalize(endVel2 + obj1Nor) * obj2->mass;
+                obj1->addForce(force1, collisionPt);
+                obj2->addForce(force2, collisionPt);
 
-            float diff = (sph->scale.x * 0.5f) - dist;
-            glm::vec3 scl = (sph->scale + cube->scale) * 0.5f;
-            obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
-            obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+                float diff = (sph->scale.x * 0.5f) - dist;
+                glm::vec3 scl = (sph->scale + cube->scale) * 0.5f;
+                obj1->translate(scl * 1.001f * glm::length(obj1->vel) * (16.f / 1000.f) * (obj2Nor - obj1Nor));
+                obj2->translate(scl * 1.001f * glm::length(obj2->vel) * (16.f / 1000.f) * (obj1Nor - obj2Nor));
+            }
+            else {
+                float mass1 = obj1->mass;
+                float mass2 = obj2->mass;
+
+                if(obj1->connectedComp == nullptr && obj2->connectedComp == nullptr)
+                {
+                    ConnectedObject* connect = new ConnectedObject();
+                    connect->addObj(obj1);
+                    connect->addObj(obj2);
+                }
+                else if(obj1->connectedComp != nullptr)
+                {
+                    mass1 = obj1->connectedComp->getMass();
+                    if(obj2->connectedComp != nullptr)
+                    {
+                        mass2 = obj2->connectedComp->getMass();
+                        if(ConnectedObject::canCollide(obj1, obj2))
+                        {
+                            ConnectedObject::mergeConnectedObjs(obj1->connectedComp, obj2->connectedComp);
+                        }
+                        else{
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        obj1->connectedComp->addObj(obj2);
+                    }
+                }
+                else
+                {
+                    mass2 = obj2->connectedComp->getMass();
+                    obj2->connectedComp->addObj(obj1);
+                }
+                glm::vec3 endForce = ((obj1->vel * mass1) + (obj2->vel * mass2));
+                collisionPt = (glm::length(obj1->vel * mass1) * obj1->getPos()) - (glm::length(obj2->vel * mass2) * obj2->getPos());
+                // Apply the added force to the component
+                glm::vec3 force = endForce - (obj1->connectedComp->mass * obj1->connectedComp->vel);
+                // using the positions because we are adding them to the connected object and it doesnt rotate otherwise
+                obj1->connectedComp->addForce(force, collisionPt);
+            } // end sticky collision logic
         }
 
     }
@@ -223,10 +359,15 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
 void GameObject::update(float dt)
 {
     glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
-
-    if(hasCollision)
+    if(updated)
     {
-        //cout << "position" << pos.x << "," << pos.y << "," << pos.z << '\n';
+        return;
+    }
+    // update through its connected component if possible
+    if(connectedComp != nullptr)
+    {
+        connectedComp->update(dt);
+        return;
     }
     n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
     n_Vel = vel + (forces / mass) * dt;
@@ -245,10 +386,11 @@ void GameObject::update(float dt)
     rot = n_Rot;
     rotVel = n_RotVel;
 
-    m_transform = Transform(pos, rot, scale);
+    updateTransform();
     forces = glm::vec3(0.f); // reset the forces
     torque = glm::vec3(0.f);
     hasCollision = false;
+    updated = true;
 }
 
 glm::vec3 GameObject::getNor(glm::vec3 vec)
@@ -282,11 +424,16 @@ glm::vec3 GameObject::getNor(glm::vec3 vec)
 void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
 {
     //cout << "collided" << '\n';
+    if(connectedComp != nullptr)
+    {
+        connectedComp->addForce(force, collPt);
+        return;
+    }
     if(geomType == MeshType::SPHERE)
     {
         // apply the force to both objects along the vector from the collision point to their center (for spheres)
         glm::vec3 arm = getPos() - collPt;
-        glm::vec3 norVec = getNor(arm);
+        //glm::vec3 norVec = getNor(arm);
         //glm::vec3 forceVec = (glm::length(force) * norVec) / (16.f / 1000.f);
         glm::vec3 forceVec = force / (16.f / 1000.f);
         forces += forceVec;//forceVec;
@@ -297,7 +444,7 @@ void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
     {
         glm::vec3 arm = getPos() - collPt;
         glm::vec3 diffVec = glm::normalize(arm);
-        glm::vec3 norVec = getNor(diffVec);
+        //glm::vec3 norVec = getNor(diffVec);
         //glm::vec3 forceVec = (glm::length(force) * norVec) / (16.f / 1000.f);
         glm::vec3 forceVec = force / (16.f / 1000.f);
         forces += forceVec;//forceVec;
@@ -322,9 +469,24 @@ glm::vec3 GameObject::getPos()
     return m_transform.position();
 }
 
-glm::mat4 GameObject::getTransform()
+glm::vec3 GameObject::getRot()
 {
-    return m_transform.T();
+    return rot;
+}
+
+glm::vec3 GameObject::getVel()
+{
+    return vel;
+}
+
+glm::vec3 GameObject::getRotVel()
+{
+    return rotVel;
+}
+
+Transform GameObject::getTransform()
+{
+    return m_transform;
 }
 
 glm::vec4 GameObject::getColor()
@@ -347,6 +509,33 @@ glm::vec3 GameObject::getScale()
 void GameObject::translate(glm::vec3 t)
 {
     pos += t;
+    updateTransform();
+}
+
+void GameObject::updateTransform()
+{
     m_transform = Transform(pos, rot, scale);
 }
 
+void GameObject::updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s)
+{
+    rot = r;
+    pos = p;
+    scale = s;
+    m_transform = Transform(p, r, s);
+}
+
+float GameObject::getMass()
+{
+    return mass;
+}
+
+void GameObject::setVel(glm::vec3 v)
+{
+    vel = v;
+}
+
+void GameObject::setRotVel(glm::vec3 rVel)
+{
+    rotVel = rVel;
+}

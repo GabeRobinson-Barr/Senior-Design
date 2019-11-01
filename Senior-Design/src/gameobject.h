@@ -4,6 +4,7 @@
 //#include "collider.h"
 #include <vector>
 #include "scene/transform.h"
+#include "connectedobject.h"
 
 enum MeshType {
     CUBE,
@@ -11,7 +12,7 @@ enum MeshType {
     MESH
 };
 
-class Collider;
+class ConnectedObject;
 
 class GameObject
 {
@@ -49,12 +50,22 @@ public:
     glm::vec3 getForce();
 
     glm::vec3 getPos();
+    glm::vec3 getRot();
     glm::vec3 getScale();
-    glm::mat4 getTransform();
+    glm::vec3 getVel();
+    glm::vec3 getRotVel();
+    float getMass();
+    Transform getTransform();
     glm::vec4 getColor();
     void translate(glm::vec3 t);
+    void setVel(glm::vec3 v);
+    void setRotVel(glm::vec3 rVel);
+    void updateTransform();
+    void updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s);
     const MeshType geomType;
     bool addstuff = true; // used for debugging collision forces
+    ConnectedObject* connectedComp; // connected component this object is part of
+    bool updated = false;
 
 protected:
     glm::vec3 scale;
@@ -76,11 +87,24 @@ protected:
     //glm::mat4 world_to_obj; // Transform matrix from world space
 
     bool hasCollision = false;
-    bool updated = false;
 
-    //std::vector<Collider*> colliders; // List of collisions involving this object
-    // RETHINK THIS/ASK PROF JANG
-    glm::vec3 centerOfMass; // CoM of all sticky objects collided with this
-    float connectedMass; // total mass of sticky objects
+};
+
+class ConnectedObject : public GameObject
+{
+public:
+    ConnectedObject();
+    ~ConnectedObject() override;
+    void update(float dt) override;
+    void addForce(glm::vec3 force, glm::vec3 collPt) override;
+    static bool canCollide(GameObject* obj1, GameObject* obj2);
+    void addObj(GameObject* obj);
+    void removeObj(GameObject* obj);
+    // Merges and returns the resulting connected object
+    static ConnectedObject* mergeConnectedObjs(ConnectedObject* c1, ConnectedObject* c2);
+
+protected:
+    std::vector<GameObject*> objs;
+    void updateMoment();
 
 };

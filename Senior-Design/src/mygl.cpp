@@ -188,7 +188,7 @@ void MyGL::GLDrawScene()
 {
     for(GameObject* obj : mp_terrain->getObjects())
     {
-        mp_progLambert->setModelMatrix(obj->getTransform());
+        mp_progLambert->setModelMatrix(obj->getTransform().T());
         Drawable* geom;
         if (obj->geomType == MeshType::CUBE)
         {

@@ -2,6 +2,7 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 SOURCES += \
+    $$PWD/connectedobject.cpp \
     $$PWD/main.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/mygl.cpp \
@@ -18,10 +19,10 @@ SOURCES += \
     $$PWD/openglcontext.cpp \
     $$PWD/scene/terrain.cpp \
     $$PWD/scene/worldaxes.cpp \
-    $$PWD/gameobject.cpp \
-    $$PWD/collider.cpp
+    $$PWD/gameobject.cpp
 
 HEADERS += \
+    $$PWD/connectedobject.h \
     $$PWD/la.h \
     $$PWD/mainwindow.h \
     $$PWD/mygl.h \
@@ -38,5 +39,4 @@ HEADERS += \
     $$PWD/openglcontext.h \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
-    $$PWD/gameobject.h \
-    $$PWD/collider.h
+    $$PWD/gameobject.h
