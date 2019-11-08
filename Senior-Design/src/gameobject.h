@@ -62,6 +62,8 @@ public:
     void setRotVel(glm::vec3 rVel);
     void updateTransform();
     void updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s);
+    void setDynamic(bool b);
+    bool isDynamic;
     const MeshType geomType;
     bool addstuff = true; // used for debugging collision forces
     ConnectedObject* connectedComp; // connected component this object is part of

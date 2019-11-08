@@ -1,11 +1,12 @@
 #include "gameobject.h"
+#include "player.h"
 #include <iostream>
 using namespace std;
 
 GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type) :
     pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)),
     vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(1.f), angDrag(1.f),
-    forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type),
+    forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type), isDynamic(true),
     connectedComp(nullptr)
 {
     //TODO:
@@ -316,9 +317,21 @@ void GameObject::collide(GameObject *obj1, GameObject *obj2)
         }
 
     }
-
     obj1->hasCollision = collided || obj1->hasCollision;
     obj2->hasCollision = collided || obj2->hasCollision;
+    Player* playerObj = dynamic_cast<Player*> (obj1);
+    if(playerObj != nullptr)
+    {
+        playerObj->addCollision(collisionPt, obj2);
+    }
+    else
+    {
+        playerObj = dynamic_cast<Player*> (obj2);
+        if(playerObj != nullptr)
+        {
+            playerObj->addCollision(collisionPt, obj1);
+        }
+    }
 }
 
 glm::vec3 GameObject::getSupport(glm::vec3 v)
@@ -359,6 +372,14 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
 void GameObject::update(float dt)
 {
     glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
+    if(!isDynamic)
+    {
+        forces = glm::vec3(0.f);
+        torque = glm::vec3(0.f);
+        updateTransform();
+        updated = true;
+        return;
+    }
     if(updated)
     {
         return;
@@ -366,9 +387,12 @@ void GameObject::update(float dt)
     // update through its connected component if possible
     if(connectedComp != nullptr)
     {
+        forces = glm::vec3(0.f);
+        torque = glm::vec3(0.f);
         connectedComp->update(dt);
         return;
     }
+    cout << "adding force" << endl;
     n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
     n_Vel = vel + (forces / mass) * dt;
 
@@ -379,7 +403,6 @@ void GameObject::update(float dt)
     }
     n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
     n_RotVel = rotVel + (torque / rotMoment) * dt;
-
 
     pos = n_Pos;
     vel = n_Vel;
@@ -423,11 +446,21 @@ glm::vec3 GameObject::getNor(glm::vec3 vec)
 
 void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
 {
-    //cout << "collided" << '\n';
+    if(!isDynamic)
+    {
+        return;
+    }
     if(connectedComp != nullptr)
     {
-        connectedComp->addForce(force, collPt);
-        return;
+        if(glm::length(force) >= 10.f)
+        {
+            connectedComp->removeObj(this);
+        }
+        else
+        {
+            connectedComp->addForce(force, collPt);
+            return;
+        }
     }
     if(geomType == MeshType::SPHERE)
     {
@@ -538,4 +571,9 @@ void GameObject::setVel(glm::vec3 v)
 void GameObject::setRotVel(glm::vec3 rVel)
 {
     rotVel = rVel;
+}
+
+void GameObject::setDynamic(bool b)
+{
+    isDynamic = b;
 }

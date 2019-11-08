@@ -12,6 +12,7 @@ public:
     void keyPressed(QKeyEvent* e);
     void keyReleased(QKeyEvent* e);
     void addForce(glm::vec3 force, glm::vec3 collPt) override; // override to update onFloor
+    void addCollision(glm::vec3 collPt, GameObject* collObj);
 
 protected:
     //Weapon m_weapon;

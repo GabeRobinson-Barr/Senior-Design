@@ -21,6 +21,7 @@ MyGL::MyGL(QWidget *parent)
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     grabKeyboard();
+    mp_terrain->addPlayer(player1);
 }
 
 MyGL::~MyGL()

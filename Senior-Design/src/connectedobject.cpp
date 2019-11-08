@@ -15,12 +15,23 @@ ConnectedObject::~ConnectedObject()
 
 void ConnectedObject::update(float dt)
 {
+    if(!isDynamic)
+    {
+        for(GameObject* g : objs)
+        {
+            g->setVel(vel);
+            g->setRotVel(rotVel);
+            g->updated = true;
+            g->updateTransform();
+        }
+        updateTransform();
+        return;
+    }
     if(mass == 0.f)
     {
         return;
     }
     glm::vec3 dPos, dVel, dRot, dRotVel;
-
     dPos = vel * dt + 0.5f * (forces / mass) * dt * dt;
     dVel = (forces / mass) * dt;
 
@@ -50,6 +61,8 @@ void ConnectedObject::update(float dt)
         g->setRotVel(rotVel + dRotVel);
         g->updateTransform(objPos, objRot, g->getScale());
         g->updated = true;
+        //g->forces = glm::vec3(0.f);
+        //g->torque = glm::vec3(0.f);
     }
     //cout << "ObjVel: " << vel.x << ", " << vel.y << ", " << vel.z << '\n';
     //cout << "End Updating Component" << '\n';
@@ -67,7 +80,7 @@ void ConnectedObject::addForce(glm::vec3 force, glm::vec3 collPt)
 
 bool ConnectedObject::canCollide(GameObject *obj1, GameObject *obj2)
 {
-    return obj1->connectedComp != obj2->connectedComp;
+    return (obj1->connectedComp != obj2->connectedComp);
 }
 
 void ConnectedObject::addObj(GameObject *obj)
@@ -79,6 +92,7 @@ void ConnectedObject::addObj(GameObject *obj)
         return;
     }
     obj->connectedComp = this;
+    isDynamic = isDynamic && obj->isDynamic;
     // update the mass and position of this object, rotation stays the same
     mass += obj->getMass();
     pos = ((pos * float(objs.size() - 1)) + obj->getPos()) / float(objs.size());
@@ -101,6 +115,7 @@ void ConnectedObject::addObj(GameObject *obj)
 
 void ConnectedObject::removeObj(GameObject *obj)
 {
+    bool stillDynamic = true;
     for(int i = 0; i < objs.size(); i++)
     {
         if(obj == objs.at(i))
@@ -114,6 +129,7 @@ void ConnectedObject::removeObj(GameObject *obj)
             glm::vec3 maxPos = pos;
             for(GameObject* g : objs)
             {
+                stillDynamic = stillDynamic && g->isDynamic;
                 glm::vec3 objPos = obj->getPos();
                 glm::vec3 objScaleFac = glm::abs(glm::vec3(obj->getTransform().rotMat() * glm::vec4(obj->getScale() * 0.5f,1)));
                 glm::vec3 objMin = objPos - objScaleFac;
@@ -133,8 +149,10 @@ void ConnectedObject::removeObj(GameObject *obj)
                 scale = glm::vec3(glm::inverse(m_transform.rotMat()) * glm::vec4(objMax - objMin,1));
             }
             updateTransform();
+            break;
         }
     }
+    isDynamic = stillDynamic;
 }
 
 ConnectedObject* ConnectedObject::mergeConnectedObjs(ConnectedObject *c1, ConnectedObject *c2)

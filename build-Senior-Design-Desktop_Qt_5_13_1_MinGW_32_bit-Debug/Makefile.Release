@@ -294,7 +294,7 @@ release/moc_mainwindow.cpp: ../Senior-Design/src/mainwindow.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qicon.h \
 		release/moc_predefs.h \
 		C:/Qt/5.13.1/mingw73_32/bin/moc.exe
-	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Extrovert/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\mainwindow.h -o release\moc_mainwindow.cpp
+	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Gabe/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\mainwindow.h -o release\moc_mainwindow.cpp
 
 release/moc_mygl.cpp: ../Senior-Design/src/mygl.h \
 		../Senior-Design/src/openglcontext.h \
@@ -539,13 +539,13 @@ release/moc_mygl.cpp: ../Senior-Design/src/mygl.h \
 		../Senior-Design/src/gameobject.h \
 		../Senior-Design/src/scene/transform.h \
 		../Senior-Design/src/connectedobject.h \
-		../Senior-Design/src/scene/octree.h \
 		../Senior-Design/src/player.h \
+		../Senior-Design/src/scene/octree.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/QOpenGLVertexArrayObject \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qopenglvertexarrayobject.h \
 		release/moc_predefs.h \
 		C:/Qt/5.13.1/mingw73_32/bin/moc.exe
-	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Extrovert/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\mygl.h -o release\moc_mygl.cpp
+	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Gabe/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\mygl.h -o release\moc_mygl.cpp
 
 release/moc_cameracontrolshelp.cpp: ../Senior-Design/src/cameracontrolshelp.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtWidgets/QWidget \
@@ -653,7 +653,7 @@ release/moc_cameracontrolshelp.cpp: ../Senior-Design/src/cameracontrolshelp.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qtouchdevice.h \
 		release/moc_predefs.h \
 		C:/Qt/5.13.1/mingw73_32/bin/moc.exe
-	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Extrovert/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Extrovert/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\cameracontrolshelp.h -o release\moc_cameracontrolshelp.cpp
+	C:\Qt\5.13.1\mingw73_32\bin\moc.exe $(DEFINES) --include C:/Users/Gabe/Desktop/Senior-Design/build-Senior-Design-Desktop_Qt_5_13_1_MinGW_32_bit-Debug/release/moc_predefs.h -IC:/Qt/5.13.1/mingw73_32/mkspecs/win32-g++ -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/include -IC:/Users/Gabe/Desktop/Senior-Design/Senior-Design/src -IC:/Qt/5.13.1/mingw73_32/include -IC:/Qt/5.13.1/mingw73_32/include/QtWidgets -IC:/Qt/5.13.1/mingw73_32/include/QtGui -IC:/Qt/5.13.1/mingw73_32/include/QtANGLE -IC:/Qt/5.13.1/mingw73_32/include/QtCore -I. -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Tools/mingw730_32/i686-w64-mingw32/include ..\Senior-Design\src\cameracontrolshelp.h -o release\moc_cameracontrolshelp.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -907,8 +907,8 @@ ui_mainwindow.h: ../Senior-Design/forms/mainwindow.ui \
 		../Senior-Design/src/gameobject.h \
 		../Senior-Design/src/scene/transform.h \
 		../Senior-Design/src/connectedobject.h \
-		../Senior-Design/src/scene/octree.h \
 		../Senior-Design/src/player.h \
+		../Senior-Design/src/scene/octree.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/QOpenGLVertexArrayObject \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qopenglvertexarrayobject.h
 	C:\Qt\5.13.1\mingw73_32\bin\uic.exe ..\Senior-Design\forms\mainwindow.ui -o ui_mainwindow.h
@@ -929,8 +929,7 @@ compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_heade
 
 ####### Compile
 
-release/connectedobject.o: ../Senior-Design/src/connectedobject.cpp ../Senior-Design/src/connectedobject.h \
-		../Senior-Design/src/gameobject.h \
+release/connectedobject.o: ../Senior-Design/src/connectedobject.cpp ../Senior-Design/src/gameobject.h \
 		../Senior-Design/src/drawable.h \
 		../Senior-Design/src/openglcontext.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtWidgets/QOpenGLWidget \
@@ -1163,7 +1162,8 @@ release/connectedobject.o: ../Senior-Design/src/connectedobject.cpp ../Senior-De
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qmatrix4x4.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qquaternion.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qgenericmatrix.h \
-		../Senior-Design/src/scene/transform.h
+		../Senior-Design/src/scene/transform.h \
+		../Senior-Design/src/connectedobject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\connectedobject.o ..\Senior-Design\src\connectedobject.cpp
 
 release/main.o: ../Senior-Design/src/main.cpp ../Senior-Design/src/mainwindow.h \
@@ -1549,8 +1549,8 @@ release/mainwindow.o: ../Senior-Design/src/mainwindow.cpp ../Senior-Design/src/m
 		../Senior-Design/src/gameobject.h \
 		../Senior-Design/src/scene/transform.h \
 		../Senior-Design/src/connectedobject.h \
-		../Senior-Design/src/scene/octree.h \
 		../Senior-Design/src/player.h \
+		../Senior-Design/src/scene/octree.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/QOpenGLVertexArrayObject \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qopenglvertexarrayobject.h \
 		../Senior-Design/src/cameracontrolshelp.h
@@ -1799,8 +1799,8 @@ release/mygl.o: ../Senior-Design/src/mygl.cpp ../Senior-Design/src/mygl.h \
 		../Senior-Design/src/gameobject.h \
 		../Senior-Design/src/scene/transform.h \
 		../Senior-Design/src/connectedobject.h \
-		../Senior-Design/src/scene/octree.h \
 		../Senior-Design/src/player.h \
+		../Senior-Design/src/scene/octree.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/QOpenGLVertexArrayObject \
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qopenglvertexarrayobject.h \
 		C:/Qt/5.13.1/mingw73_32/include/QtWidgets/QApplication \
@@ -3902,6 +3902,8 @@ release/terrain.o: ../Senior-Design/src/scene/terrain.cpp ../Senior-Design/src/s
 		C:/Qt/5.13.1/mingw73_32/include/QtGui/qgenericmatrix.h \
 		../Senior-Design/src/scene/transform.h \
 		../Senior-Design/src/connectedobject.h \
+		../Senior-Design/src/player.h \
+		../Senior-Design/src/camera.h \
 		../Senior-Design/src/scene/octree.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\terrain.o ..\Senior-Design\src\scene\terrain.cpp
 

@@ -2,6 +2,7 @@
 #include <QList>
 #include <la.h>
 #include "gameobject.h"
+#include "player.h"
 #include "octree.h"
 
 class Terrain
@@ -12,6 +13,7 @@ public:
     void CreateTestScene();
     void update(float dt);
     void checkCollisions();
+    void addPlayer(Player* p);
 
     std::vector<GameObject*> getObjects();
 
