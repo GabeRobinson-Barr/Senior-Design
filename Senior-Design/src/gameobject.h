@@ -6,6 +6,8 @@
 #include "scene/transform.h"
 #include "connectedobject.h"
 
+static int nextId = 0;
+
 enum MeshType {
     CUBE,
     SPHERE,
@@ -20,7 +22,12 @@ public:
     GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type);
     virtual ~GameObject();
 
-    static void collide(GameObject* obj1, GameObject* obj2);
+    const int id = nextId++;
+
+    static std::pair<bool,glm::vec3> collide(GameObject* obj1, GameObject* obj2);
+
+    virtual void addCollision(GameObject* obj, glm::vec3 collisionPt);
+    static void addStickyCollision(GameObject* obj1, GameObject* obj2, glm::vec3 collisionPt);
 
     // This function returns the normalized support point for a cube or sphere
     // for use in determining collision points
@@ -68,6 +75,7 @@ public:
     bool addstuff = true; // used for debugging collision forces
     ConnectedObject* connectedComp; // connected component this object is part of
     bool updated = false;
+    bool isSticky;
 
 protected:
     glm::vec3 scale;
@@ -83,7 +91,6 @@ protected:
     float angDrag; // angular drag coefficient responsible for slowing rotation
     glm::vec3 forces; // Total forces acting on this object
     glm::vec3 torque;
-    bool isSticky;
 
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space

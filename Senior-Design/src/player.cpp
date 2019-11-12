@@ -63,7 +63,7 @@ void Player::update(float dt)
     if(!onFloor)
     {
         //cout << "not grounded" << endl;
-        addForce(-cam->up * .25f, pos + cam->up);
+        addForce(-cam->up * playerGrav * mass, pos + cam->up);
     }
     else
     {
@@ -72,13 +72,13 @@ void Player::update(float dt)
         vel.z = 0.f;
         rotVel = glm::vec3(0);
     }
-    cout << "Force y: " << forces.y << endl;
+    //cout << "Force y: " << forces.y << endl;
 
     this->GameObject::update(dt);
     cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(0,1,0.5f,1));
     cam->ref = cam->eye + glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
     cam->RecomputeAttributes();
-    cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
+    //cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
     //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
     //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
     onFloor = false;
@@ -142,12 +142,12 @@ void Player::keyReleased(QKeyEvent *e)
         }
 }
 
-void Player::addCollision(glm::vec3 collPt, GameObject* collObj)
+void Player::addCollision(GameObject* obj, glm::vec3 collisionPt)
 {
-    glm::vec3 collNor = -getNor(collPt - getPos());
+    glm::vec3 collNor = -getNor(collisionPt - getPos());
     if(collNor.y <= 0.f)
     {
         onFloor = true;
-        floorObj = collObj;
+        floorObj = obj;
     }
 }

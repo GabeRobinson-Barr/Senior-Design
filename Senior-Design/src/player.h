@@ -12,7 +12,7 @@ public:
     void keyPressed(QKeyEvent* e);
     void keyReleased(QKeyEvent* e);
     void addForce(glm::vec3 force, glm::vec3 collPt) override; // override to update onFloor
-    void addCollision(glm::vec3 collPt, GameObject* collObj);
+    void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
 
 protected:
     //Weapon m_weapon;
@@ -31,7 +31,9 @@ protected:
     float jumpStr;
     float moveSpd;
     float rotSpd;
+    float playerGrav = 0.3f;
     Camera* cam;
+    glm::vec3 playerUp;
 };
 
 #endif // PLAYER_H

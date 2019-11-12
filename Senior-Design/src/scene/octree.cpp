@@ -229,6 +229,26 @@ std::vector<std::pair<GameObject*,GameObject*>>& Octree::getCollisionPairs(std::
         }
     }
 
+    if(parent == nullptr)
+    {
+        for(int i = 0; i < collisionPairs.size(); i++)
+        {
+            int test = collisionPairs.size() - 1;
+            int id1 = collisionPairs.at(i).first->id;
+            int id2 = collisionPairs.at(i).second->id;
+            for(int j = i + 1; j < collisionPairs.size(); j++)
+            {
+                int id3 = collisionPairs.at(j).first->id;
+                int id4 = collisionPairs.at(j).second->id;
+                if((id1 == id3 && id2 == id4) || (id1 == id4 && id2 == id3))
+                {
+                    collisionPairs.erase(collisionPairs.begin() + j);
+                    j--;
+                }
+            }
+        }
+    }
+
 
     return collisionPairs;
 }
