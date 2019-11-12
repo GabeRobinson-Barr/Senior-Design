@@ -92,6 +92,8 @@ protected:
     glm::vec3 forces; // Total forces acting on this object
     glm::vec3 torque;
 
+    float maxSpd;
+
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space
 
