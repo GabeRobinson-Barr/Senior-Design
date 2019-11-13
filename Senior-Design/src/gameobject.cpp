@@ -282,6 +282,11 @@ void GameObject::update(float dt)
         connectedComp->update(dt);
         return;
     }
+    Player* p = dynamic_cast<Player*>(this);
+    if(p == nullptr)
+    {
+        cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
+    }
     //cout << "adding force" << endl;
     n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
     n_Vel = vel + (forces / mass) * dt;

@@ -49,7 +49,7 @@ void Terrain::CreateTestScene()
         }
     }*/
 
-    //obj1->addForce(glm::vec3(2.f * obj1->getMass(),0,0), obj1->getPos() + glm::vec3(-1,0,0)); // adding initial force for testing
+    obj1->addForce(glm::vec3(0,2.f * obj1->getMass(),0), obj1->getPos() + glm::vec3(0,-1,0)); // adding initial force for testing
     //obj3->addForce(glm::vec3(-3.f,0,0), obj3->getPos() + glm::vec3(1,0,0));
 
 }
