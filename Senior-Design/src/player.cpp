@@ -4,7 +4,7 @@
 using namespace std;
 
 Player::Player(Camera** c) : GameObject(glm::vec3(0,15,0), glm::vec3(0,0,0), glm::vec3(1,2,1), 1.f, SPHERE),
-    camOffset(glm::vec3(0,0.9f,0.55f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(15.f),
+    camOffset(glm::vec3(0,0.9f,0.55f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(40.f),
     moveSpd(5.f), rotSpd(60.f)
 {
     isSticky = false;
@@ -60,41 +60,51 @@ void Player::update(float dt)
         playerSpd = playerSpd - (playerSpd / getMass()) * drag;
     }
     updateTransform();
-    if(onFloor && jumped)
+    if(onFloor)
     {
-        translate(glm::vec3(playerUp * jumpStr * dt * 2.f));
-        addForce(playerUp * jumpStr);
-
-        if(floorObj != nullptr)
+        if(jumped)
         {
-            glm::vec3 jumpPt = pos + -playerUp;
-            floorObj->addForce(-playerUp * jumpStr, jumpPt);
+            translate(glm::vec3(playerUp * jumpStr * dt * 2.f));
+            addForce(playerUp * jumpStr);
 
+            if(floorObj != nullptr)
+            {
+                glm::vec3 jumpPt = pos + -playerUp;
+                floorObj->addForce(-playerUp * jumpStr, jumpPt);
+                floorObj = nullptr;
+                onFloor = false;
+            }
         }
-    }
-    if(!onFloor)
-    {
-        //cout << "not grounded" << endl;
-        addForce(-playerUp * playerGrav * mass);
+        cout << "movedir: " << moveDir.x << ", " << moveDir.z << endl;
+        cout << "Force: " << forces.x << ", " << forces.z << endl;
+        this->GameObject::update(dt);
+        vel.y = max(vel.y, 0.f);
+        if(floorObj != nullptr) // check if we are still on the floor after updating
+        {
+            std::pair<bool,glm::vec3> p = collide(this, floorObj);
+            if(!p.first)
+            {
+                floorObj = nullptr;
+                onFloor = false;
+            }
+        }
     }
     else
     {
-        //vel.x = 0.f;
-        vel.y = max(vel.y, 0.f);
-        //vel.z = 0.f;
-        //rotVel = glm::vec3(0);
+        //cout << "not grounded" << endl;
+        addForce(-playerUp * playerGrav * mass);
+        this->GameObject::update(dt);
     }
     //cout << "Force y: " << forces.y << endl;
-
-    this->GameObject::update(dt);
+    //cout << "Vel y: " << getVel().y << endl;
     cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(0,1,0.5f,1));
     cam->ref = cam->eye + glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
     cam->RecomputeAttributes();
     recomputeAttributes();
     cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
-    cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
-    cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
-    cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl;
+    //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
+    //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
+    //cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl;
     onFloor = false;
     jumped = false;
 }
@@ -104,6 +114,7 @@ void Player::addForce(glm::vec3 force, glm::vec3 collPt)
     GameObject::addForce(force, collPt);
 }
 
+// this one handles player input forces
 void Player::addForce(glm::vec3 force)
 {
     glm::vec3 forceVec = force / (16.f / 1000.f);
@@ -164,11 +175,15 @@ void Player::keyReleased(QKeyEvent *e)
 
 void Player::addCollision(GameObject* obj, glm::vec3 collisionPt)
 {
-    glm::vec3 collNor = -getNor(collisionPt - obj->getPos());
-    if(collNor.y <= 0.f)
+    GameObject::addCollision(obj, collisionPt);
+    glm::vec3 collVec = collisionPt - getPos();
+    cout << "collVec: " << collVec.x << ", " << collVec.y << ", " << collVec.z << endl;
+    if(collVec.y < -0.0001f)
     {
         onFloor = true;
         floorObj = obj;
+        //vel.y = 0.f;
+        //forces.y = 0.f;
     }
 
 }
@@ -178,4 +193,9 @@ void Player::recomputeAttributes()
     playerUp = glm::vec3(m_transform.rotMat() * glm::vec4(cam->world_up,1));
     playerFor = glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
     playerRight = glm::cross(playerFor, playerUp);
+}
+
+bool Player::objIsFloor(GameObject* obj)
+{
+    return floorObj != nullptr && floorObj == obj;
 }

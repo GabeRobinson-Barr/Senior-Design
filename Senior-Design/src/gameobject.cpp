@@ -143,14 +143,42 @@ std::pair<bool,glm::vec3> GameObject::collide(GameObject *obj1, GameObject *obj2
 
 void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
 {
-    glm::vec3 objNor = obj->getNor(collisionPt - obj->getPos());
-    glm::vec3 endVel = ((obj->vel * (obj->mass * 2.f)/(obj->mass + this->mass)) +
-                         (this->vel * (this->mass - obj->mass) / (obj->mass + this->mass)));
-    glm::vec3 force = glm::length(endVel - this->vel) * glm::normalize(endVel + objNor) * this->mass;
-    this->addForce(force, collisionPt);
+    if(isDynamic)
+    {
+        glm::vec3 force;
+        glm::vec3 objNor = obj->getNor(collisionPt - obj->getPos());
+        glm::vec3 scl = (obj->scale + this->scale) * 0.5f;
+        if(obj->isDynamic)
+        {
+            glm::vec3 endVel = ((obj->vel * (obj->mass * 2.f)/(obj->mass + this->mass)) +
+                                 (this->vel * (this->mass - obj->mass) / (obj->mass + this->mass)));
+            force = glm::length(endVel - this->vel) * glm::normalize(endVel + objNor) * this->mass;
 
-    glm::vec3 scl = (obj->scale + this->scale) * 0.5f;
-    this->translate(scl * 1.001f * glm::length(this->vel) * (16.f / 1000.f) * (objNor));
+            this->translate(1.5f * -vel * (16.f / 1000.f));
+        }
+        else
+        {
+            float fMag = glm::dot(-vel, objNor) * this->mass;
+            if(fMag < -0.0001f)
+            {
+                force = glm::vec3(0.f);
+            }
+            else
+            {
+                force = fMag * objNor;
+                Player* player = dynamic_cast<Player*>(this);
+                if(player != nullptr)
+                {
+                    if(player->objIsFloor(obj))
+                    {
+                        force = glm::vec3(0.f);
+                    }
+                }
+            }
+            this->translate(1.5f * -vel * (16.f / 1000.f));
+        }
+        this->addForce(force, collisionPt);
+    }
 }
 
 void GameObject::addStickyCollision(GameObject *obj1, GameObject *obj2, glm::vec3 collisionPt)
@@ -332,7 +360,7 @@ void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
         //glm::vec3 forceVec = (glm::length(force) * norVec) / (16.f / 1000.f);
         glm::vec3 forceVec = force / (16.f / 1000.f);
         forces += forceVec;//forceVec;
-        torque = glm::cross(force, arm) / (16.f / 1000.f);
+        //torque = glm::cross(force, arm) / (16.f / 1000.f);
         //cout << "sphforce: " << forceVec.x << "," << forceVec.y << "," << forceVec.z << '\n';
     }
     else if(geomType == MeshType::CUBE)// && addstuff)

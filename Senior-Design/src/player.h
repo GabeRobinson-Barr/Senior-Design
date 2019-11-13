@@ -15,6 +15,7 @@ public:
     void addForce(glm::vec3 force);
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
     void recomputeAttributes();
+    bool objIsFloor(GameObject* obj);
 
 protected:
     //Weapon m_weapon;
