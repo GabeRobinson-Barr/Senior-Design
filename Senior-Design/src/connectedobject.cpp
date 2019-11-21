@@ -152,6 +152,10 @@ void ConnectedObject::removeObj(GameObject *obj)
             break;
         }
     }
+    if(objs.size() <= 1)
+    {
+        removeAll();
+    }
     isDynamic = stillDynamic;
 }
 
@@ -170,4 +174,13 @@ void ConnectedObject::updateMoment()
     moment = glm::vec3((1.f/12.f) * mass * (pow(scale.y,2.f) + pow(scale.z,2.f)),
                        (1.f/12.f) * mass * (pow(scale.x,2.f) + pow(scale.z,2.f)),
                        (1.f/12.f) * mass * (pow(scale.x,2.f) + pow(scale.y,2.f)));
+}
+
+void ConnectedObject::removeAll()
+{
+    for(GameObject* g : objs)
+    {
+        g->connectedComp = nullptr;
+    }
+    delete this;
 }

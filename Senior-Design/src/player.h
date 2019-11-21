@@ -2,6 +2,7 @@
 #define PLAYER_H
 #include "gameobject.h"
 #include "camera.h"
+#include "playergun.h"
 
 class Player : public GameObject
 {
@@ -24,6 +25,7 @@ protected:
     //Weapon m_weapon;
     const glm::vec3 camOffset;
     GameObject* floorObj = nullptr;
+    PlayerGun myGun;
     bool onFloor = false;
     bool jumped = false;
     bool moveRight = false;

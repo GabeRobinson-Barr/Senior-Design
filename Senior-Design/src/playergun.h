@@ -1,9 +1,10 @@
 #ifndef PLAYERGUN_H
 #define PLAYERGUN_H
 #include "gameobject.h"
-#include "player.h"
+//#include "player.h"
 
-class GunRope;
+//class GunRope;
+class Player;
 
 class PlayerGun : public GameObject
 {
@@ -13,18 +14,26 @@ public:
     void update(float dt) override;
     glm::vec3 getNor(glm::vec3 vec);
     void addForce(glm::vec3 force, glm::vec3 collPt) override;
+    void addForce(glm::vec3 force);
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
-    void fire(glm::vec3 castVec);
-    void retract();
+    void fire(glm::vec3 castVec, glm::vec3 castPos);
+    void retract(glm::vec3 playerPos);
+    void detach();
+    void playerCollision();
 
 protected:
-    Player* myPlayer;
+    //Player* myPlayer;
     glm::vec3 castVec;
     float fireSpd;
+    bool isFired;
+    bool firing;
+    bool isAttached;
+    bool retracting;
+
 
 };
 
-class GunRope
+/*class GunRope
 {
 public:
     GunRope(PlayerGun* pg, GunRope* last, GunRope* next, glm::vec3 castPos, glm::vec3 castVec);
@@ -40,6 +49,6 @@ private:
     float xDiff;
     float yDiff;
 
-};
+};*/
 
 #endif // PLAYERGUN_H

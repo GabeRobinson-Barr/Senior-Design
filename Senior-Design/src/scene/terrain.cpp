@@ -15,7 +15,7 @@ void Terrain::CreateTestScene()
     //GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::SPHERE);
     //GameObject* obj3 = new GameObject(glm::vec3(20,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 3, MeshType::SPHERE);
     root.add(obj1);
-    //obj1->setDynamic(false);
+    obj1->setDynamic(false);
     //root.add(obj2);
     //root.add(obj3);
     /*int s = 0;

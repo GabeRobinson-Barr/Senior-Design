@@ -1,5 +1,6 @@
 #include "gameobject.h"
 #include "player.h"
+#include "playergun.h"
 #include <iostream>
 using namespace std;
 
@@ -202,9 +203,27 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
 
 void GameObject::addStickyCollision(GameObject *obj1, GameObject *obj2, glm::vec3 collisionPt)
 {
+    // Before we do anything make sure this collision isnt the player colliding with its gun
+    Player* p = dynamic_cast<Player*>(obj1);
+    PlayerGun* pg = dynamic_cast<PlayerGun*>(obj2);
+    if(p != nullptr && pg != nullptr)
+    {
+        pg->playerCollision();
+        return;
+    }
+    else
+    {
+        p = dynamic_cast<Player*>(obj2);
+        pg = dynamic_cast<PlayerGun*>(obj1);
+        if(p != nullptr && pg != nullptr)
+        {
+            pg->playerCollision();
+            return;
+        }
+    }
+
     float mass1 = obj1->mass;
     float mass2 = obj2->mass;
-
     if(obj1->connectedComp == nullptr && obj2->connectedComp == nullptr)
     {
         ConnectedObject* connect = new ConnectedObject();
@@ -375,7 +394,7 @@ void GameObject::addForce(glm::vec3 force, glm::vec3 collPt)
     }
     if(connectedComp != nullptr)
     {
-        if(glm::length(force) >= 10.f)
+        if(glm::length(force) >= 100.f)
         {
             connectedComp->removeObj(this);
         }

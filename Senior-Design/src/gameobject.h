@@ -115,6 +115,7 @@ public:
     void removeObj(GameObject* obj);
     // Merges and returns the resulting connected object
     static ConnectedObject* mergeConnectedObjs(ConnectedObject* c1, ConnectedObject* c2);
+    void removeAll();
 
 protected:
     std::vector<GameObject*> objs;

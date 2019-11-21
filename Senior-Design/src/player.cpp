@@ -5,14 +5,13 @@ using namespace std;
 
 Player::Player(Camera** c) : GameObject(glm::vec3(0,15,0), glm::vec3(0,0,0), glm::vec3(1,2,1), 1.f, SPHERE),
     camOffset(glm::vec3(0,0.9f,0.55f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(40.f),
-    maxMoveSpd(5.f), rotSpd(60.f)
+    maxMoveSpd(5.f), rotSpd(60.f), myGun(PlayerGun(this))
 {
     isSticky = false;
     cam = new Camera((*c)->width, (*c)->height, pos + camOffset, pos + glm::vec3(0,0,1), (*c)->world_up);
     *c = cam;
     drag = 0.02f;
     recomputeAttributes();
-    //delete c;
 }
 
 Player::~Player(){
