@@ -16,6 +16,9 @@ public:
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
     void recomputeAttributes();
     bool objIsFloor(GameObject* obj);
+    glm::vec3 getMoveDir();
+    float getMoveSpeed();
+    void dynamicCollide();
 
 protected:
     //Weapon m_weapon;
@@ -37,10 +40,11 @@ protected:
     bool blockUp = false;
     bool rotDown = false;
     bool blockDown = false;
+    bool tempStop = false;
     float currBoost;
     float maxBoost;
     float jumpStr;
-    float moveSpd;
+    float maxMoveSpd; // Max speed player can go
     float rotSpd;
     float playerGrav = 0.3f;
     float speedInc = 1.f;

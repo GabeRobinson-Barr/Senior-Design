@@ -7,6 +7,7 @@
 #include "connectedobject.h"
 
 static int nextId = 0;
+static const float maxVel = 250.f;
 
 enum MeshType {
     CUBE,
@@ -98,6 +99,7 @@ protected:
     //glm::mat4 world_to_obj; // Transform matrix from world space
 
     bool hasCollision = false;
+    bool hasPlayerCollision = false;
 
 };
 

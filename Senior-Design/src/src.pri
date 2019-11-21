@@ -19,7 +19,8 @@ SOURCES += \
     $$PWD/openglcontext.cpp \
     $$PWD/scene/terrain.cpp \
     $$PWD/scene/worldaxes.cpp \
-    $$PWD/gameobject.cpp
+    $$PWD/gameobject.cpp \
+    $$PWD/playergun.cpp
 
 HEADERS += \
     $$PWD/connectedobject.h \
@@ -39,4 +40,5 @@ HEADERS += \
     $$PWD/openglcontext.h \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
-    $$PWD/gameobject.h
+    $$PWD/gameobject.h \
+    $$PWD/playergun.h

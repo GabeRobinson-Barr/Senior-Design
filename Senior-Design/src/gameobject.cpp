@@ -155,6 +155,25 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
             force = glm::length(endVel - this->vel) * glm::normalize(endVel + objNor) * this->mass;
 
             this->translate(1.5f * -vel * (16.f / 1000.f));
+            // this series of statements checks if the player is moving towards this object and makes
+            // sure they cant collide multiple times
+            Player* player = dynamic_cast<Player*>(this);
+            if(player != nullptr)
+            {
+                player->dynamicCollide();
+                glm::vec3 moveDir = player->getMoveDir();
+                glm::vec3 playerMove = player->getVel();
+                if(glm::length(moveDir) > 0.0001f)
+                {
+                     playerMove += glm::normalize(moveDir) * player->getMoveSpeed();
+                }
+                if(glm::dot(playerMove, obj->getPos() - getPos()) > 0.f)
+                {
+                    this->translate(-1.5f * playerMove * (16.f / 1000.f));
+                    obj->translate(3.f * playerMove * (16.f / 1000.f));
+                    force += -playerMove * this->mass;
+                }
+            }
         }
         else
         {
@@ -282,11 +301,15 @@ void GameObject::update(float dt)
         connectedComp->update(dt);
         return;
     }
-    Player* p = dynamic_cast<Player*>(this);
+    /*Player* p = dynamic_cast<Player*>(this);
     if(p == nullptr)
     {
-        cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
+        cout << "objpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
     }
+    else
+    {
+        cout << "playerpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
+    }*/
     //cout << "adding force" << endl;
     n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
     n_Vel = vel + (forces / mass) * dt;
@@ -301,6 +324,11 @@ void GameObject::update(float dt)
 
     pos = n_Pos;
     vel = n_Vel;
+    float velMag = glm::length(vel);
+    if(velMag >= maxVel)
+    {
+        vel = maxVel * glm::normalize(vel);
+    }
     rot = n_Rot;
     rotVel = n_RotVel;
 
