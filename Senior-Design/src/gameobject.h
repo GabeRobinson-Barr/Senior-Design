@@ -71,12 +71,14 @@ public:
     void updateTransform();
     void updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s);
     void setDynamic(bool b);
+    void disableOne();
     bool isDynamic;
     const MeshType geomType;
     bool addstuff = true; // used for debugging collision forces
     ConnectedObject* connectedComp; // connected component this object is part of
     bool updated = false;
     bool isSticky;
+    bool noColl = false;
 
 protected:
     glm::vec3 scale;
@@ -92,8 +94,9 @@ protected:
     float angDrag; // angular drag coefficient responsible for slowing rotation
     glm::vec3 forces; // Total forces acting on this object
     glm::vec3 torque;
-
+    float bounceFac = 0.5f;
     float maxSpd;
+
 
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space

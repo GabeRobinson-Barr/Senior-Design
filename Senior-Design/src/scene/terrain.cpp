@@ -4,18 +4,19 @@
 #include <iostream>
 using namespace std;
 
-Terrain::Terrain() : root(Octree(-dimensions / 2.f, dimensions / 2.f))
+Terrain::Terrain() : root(Octree(-dimensions, dimensions))
 {}
 
 
 void Terrain::CreateTestScene()
 {
+    setupLevel();
     // Create the basic terrain floor
-    GameObject* obj1 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(10,10,10), 1, MeshType::CUBE);
+    //GameObject* obj1 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(10,10,10), 1, MeshType::CUBE);
     //GameObject* obj2 = new GameObject(glm::vec3(10,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1, MeshType::SPHERE);
     //GameObject* obj3 = new GameObject(glm::vec3(20,0,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 3, MeshType::SPHERE);
-    root.add(obj1);
-    obj1->setDynamic(false);
+    //root.add(obj1);
+    //obj1->setDynamic(false);
     //root.add(obj2);
     //root.add(obj3);
     /*int s = 0;
@@ -77,8 +78,23 @@ void Terrain::checkCollisions()
                 }
                 else
                 {
-                    obj1->addCollision(obj2,pair.second);
-                    obj2->addCollision(obj1,pair.second);
+                    if(!obj1->noColl)
+                    {
+                        obj1->addCollision(obj2,pair.second);
+                    }
+                    else
+                    {
+                        obj1->noColl = false;
+                    }
+                    if(!obj2->noColl)
+                    {
+                        obj2->addCollision(obj1,pair.second);
+                    }
+                    else
+                    {
+                        obj2->noColl = false;
+                    }
+
                 }
 
             }
@@ -112,3 +128,17 @@ void Terrain::addPlayer(Player *p)
     root.add(p);
 }
 
+void Terrain::setupLevel()
+{
+    GameObject* obj = new GameObject(glm::vec3(0,-0.5f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
+    obj = new GameObject(glm::vec3(0,250.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
+    obj = new GameObject(glm::vec3(10.f,20.f,20.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
+    root.add(obj);
+    obj = new GameObject(glm::vec3(0,50.f,0), glm::vec3(0.f), glm::vec3(10.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
+}

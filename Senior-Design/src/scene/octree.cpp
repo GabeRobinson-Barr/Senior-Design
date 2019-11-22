@@ -101,8 +101,8 @@ bool Octree::move(GameObject *obj, glm::vec3 oldPos)
         if(!isLeaf) // If this is not a leaf then find the child nodes containing this object
         {
             objPos = oldPos; // use the old position to find the object in the tree
-            objMax = objPos + obj->getScale();
-            objMin = objPos - obj->getScale();
+            objMax = objPos + obj->getScale() * 0.75f;
+            objMin = objPos - obj->getScale() * 0.75f;
 
             // Place objects into any overlapping nodes
             for(int idx = 0; idx < 8; idx++)
@@ -200,8 +200,8 @@ std::vector<GameObject*> Octree::getObjects()
 std::vector<std::pair<GameObject*,GameObject*>>& Octree::getCollisionPairs(std::vector<std::pair<GameObject*,GameObject*>>& collisionPairs)
 {
     // This node is guarenteed to have at least 2 objects in it
-    if(isLeaf) // If this is a leaf, check dist and return possible collision pairs
-    {
+    //if(isLeaf) // If this is a leaf, check dist and return possible collision pairs
+    //{
         for(int i = 0; i < m_Objs.size(); i++)
         {
             for(int j = i + 1; j < m_Objs.size(); j++)
@@ -217,8 +217,8 @@ std::vector<std::pair<GameObject*,GameObject*>>& Octree::getCollisionPairs(std::
                 }
             }
         }
-    }
-    else // this is not a leaf, recurse on children nodes if they have possible collisions (2 or more objects)
+    //}
+    if(!isLeaf) // this is not a leaf, recurse on children nodes if they have possible collisions (2 or more objects)
     {
         for(int i = 0; i < 8; i++)
         {

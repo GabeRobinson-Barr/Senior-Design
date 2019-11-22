@@ -194,6 +194,12 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
                         force = glm::vec3(0.f);
                     }
                 }
+                else if(glm::dot(getVel(), obj->getPos() - getPos()) > 0.f)
+                {
+                    translate(3.f * -vel * (16.f / 1000.f));
+                    setVel(-vel);
+                    disableOne();
+                }
             }
             this->translate(1.5f * -vel * (16.f / 1000.f));
         }
@@ -299,58 +305,57 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
 
 void GameObject::update(float dt)
 {
-    glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
-    if(!isDynamic)
-    {
-        forces = glm::vec3(0.f);
-        torque = glm::vec3(0.f);
-        updateTransform();
-        updated = true;
-        return;
-    }
-    if(updated)
-    {
-        return;
-    }
-    // update through its connected component if possible
-    if(connectedComp != nullptr)
-    {
-        forces = glm::vec3(0.f);
-        torque = glm::vec3(0.f);
-        connectedComp->update(dt);
-        return;
-    }
-    /*Player* p = dynamic_cast<Player*>(this);
-    if(p == nullptr)
-    {
-        cout << "objpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
-    }
-    else
-    {
-        cout << "playerpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
-    }*/
-    //cout << "adding force" << endl;
-    n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
-    n_Vel = vel + (forces / mass) * dt;
+        glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
+        if(!isDynamic)
+        {
+            forces = glm::vec3(0.f);
+            torque = glm::vec3(0.f);
+            updateTransform();
+            updated = true;
+            return;
+        }
+        if(updated)
+        {
+            return;
+        }
+        // update through its connected component if possible
+        if(connectedComp != nullptr)
+        {
+            forces = glm::vec3(0.f);
+            torque = glm::vec3(0.f);
+            connectedComp->update(dt);
+            return;
+        }
+        /*Player* p = dynamic_cast<Player*>(this);
+        if(p == nullptr)
+        {
+            cout << "objpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
+        }
+        else
+        {
+            cout << "playerpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
+        }*/
+        //cout << "adding force" << endl;
+        n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
+        n_Vel = vel + (forces / mass) * dt;
 
-    glm::vec3 rotMoment = moment;
-    if(geomType == CUBE)
-    {
-        rotMoment = glm::vec3(m_transform.rotMat() * glm::vec4(moment,1));
-    }
-    n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
-    n_RotVel = rotVel + (torque / rotMoment) * dt;
+        glm::vec3 rotMoment = moment;
+        if(geomType == CUBE)
+        {
+            rotMoment = glm::vec3(m_transform.rotMat() * glm::vec4(moment,1));
+        }
+        n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
+        n_RotVel = rotVel + (torque / rotMoment) * dt;
 
-    pos = n_Pos;
-    vel = n_Vel;
-    float velMag = glm::length(vel);
-    if(velMag >= maxVel)
-    {
-        vel = maxVel * glm::normalize(vel);
-    }
-    rot = n_Rot;
-    rotVel = n_RotVel;
-
+        pos = n_Pos;
+        vel = n_Vel;
+        float velMag = glm::length(vel);
+        if(velMag >= maxVel)
+        {
+            vel = maxVel * glm::normalize(vel);
+        }
+        rot = n_Rot;
+        rotVel = n_RotVel;
     updateTransform();
     forces = glm::vec3(0.f); // reset the forces
     torque = glm::vec3(0.f);
@@ -466,14 +471,14 @@ Transform GameObject::getTransform()
 
 glm::vec4 GameObject::getColor()
 {
-    //if(hasCollision)
-    //{
-    //    return glm::vec4(0,1,0,1);
-    //}
-    //else
-    //{
+    if(!isDynamic)
+    {
+        return glm::vec4(0,1,0,1);
+    }
+    else
+    {
         return glm::vec4(1,0,0,1);
-    //}
+    }
 }
 
 glm::vec3 GameObject::getScale()
@@ -518,4 +523,9 @@ void GameObject::setRotVel(glm::vec3 rVel)
 void GameObject::setDynamic(bool b)
 {
     isDynamic = b;
+}
+
+void GameObject::disableOne()
+{
+    noColl = true;
 }

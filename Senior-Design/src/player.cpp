@@ -27,7 +27,7 @@ void Player::update(float dt)
     }
     else
     {
-        if(pos.y <= 0.f || connectedComp != nullptr || floorObj != nullptr)
+        if( connectedComp != nullptr || floorObj != nullptr)
         {
             onFloor = true;
         }

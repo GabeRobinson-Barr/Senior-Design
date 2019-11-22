@@ -14,6 +14,7 @@ public:
     void update(float dt);
     void checkCollisions();
     void addPlayer(Player* p);
+    void setupLevel();
 
     std::vector<GameObject*> getObjects();
 
