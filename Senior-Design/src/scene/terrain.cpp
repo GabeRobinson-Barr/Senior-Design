@@ -136,9 +136,9 @@ void Terrain::setupLevel()
     obj = new GameObject(glm::vec3(0,250.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
-    obj = new GameObject(glm::vec3(10.f,20.f,20.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
+    obj = new GameObject(glm::vec3(10.f,1.f,20.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
     root.add(obj);
-    obj = new GameObject(glm::vec3(0,50.f,0), glm::vec3(0.f), glm::vec3(10.f), 1.f, CUBE);
+    obj = new GameObject(glm::vec3(0,10.f,0), glm::vec3(0.f), glm::vec3(10.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
 }

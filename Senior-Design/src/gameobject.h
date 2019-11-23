@@ -64,6 +64,7 @@ public:
     glm::vec3 getRotVel();
     float getMass();
     Transform getTransform();
+    Transform getLastTransform();
     glm::vec4 getColor();
     void translate(glm::vec3 t);
     void setVel(glm::vec3 v);
@@ -72,6 +73,7 @@ public:
     void updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s);
     void setDynamic(bool b);
     void disableOne();
+    void rewindPos();
     bool isDynamic;
     const MeshType geomType;
     bool addstuff = true; // used for debugging collision forces
@@ -85,6 +87,7 @@ protected:
     glm::vec3 pos;
     glm::vec3 rot;
     Transform m_transform;
+    Transform lastTransform;
     glm::vec3 vel;
     glm::vec3 rotVel;
     float mass;
@@ -97,12 +100,19 @@ protected:
     float bounceFac = 0.5f;
     float maxSpd;
 
+    glm::vec3 nextPos;
+    glm::vec3 nextRot;
+    glm::vec3 nextVel;
+    glm::vec3 nextRotVel;
+
 
     //glm::mat4 obj_to_world;
     //glm::mat4 world_to_obj; // Transform matrix from world space
 
     bool hasCollision = false;
     bool hasPlayerCollision = false;
+
+    bool rewound = false;
 
 };
 

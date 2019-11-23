@@ -19,8 +19,8 @@ void ConnectedObject::update(float dt)
     {
         for(GameObject* g : objs)
         {
-            g->setVel(vel);
-            g->setRotVel(rotVel);
+            g->setVel(nextVel);
+            g->setRotVel(nextRotVel);
             g->updated = true;
             g->updateTransform();
         }
@@ -31,6 +31,10 @@ void ConnectedObject::update(float dt)
     {
         return;
     }
+    pos = nextPos;
+    vel = nextVel;
+    rot = nextRot;
+    rotVel = nextRotVel;
     glm::vec3 dPos, dVel, dRot, dRotVel;
     dPos = vel * dt + 0.5f * (forces / mass) * dt * dt;
     dVel = (forces / mass) * dt;
@@ -43,10 +47,10 @@ void ConnectedObject::update(float dt)
     dRot = rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
     dRotVel = (torque / rotMoment) * dt;
 
-    pos = dPos + pos;
-    vel = dVel + vel;
-    rot = dRot + rot;
-    rotVel = dRotVel + rotVel;
+    nextPos = dPos + pos;
+    nextVel = dVel + vel;
+    nextRot = dRot + rot;
+    nextRotVel = dRotVel + rotVel;
 
     Transform newTrans = Transform(pos, rot, scale);
 

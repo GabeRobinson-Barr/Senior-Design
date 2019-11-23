@@ -20,6 +20,7 @@ public:
     glm::vec3 getMoveDir();
     float getMoveSpeed();
     void dynamicCollide();
+    void setFloor(GameObject* obj);
 
 protected:
     //Weapon m_weapon;

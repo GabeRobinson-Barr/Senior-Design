@@ -3,8 +3,8 @@
 #include <iostream>
 using namespace std;
 
-Player::Player(Camera** c) : GameObject(glm::vec3(0,15,0), glm::vec3(0,0,0), glm::vec3(1,2,1), 1.f, SPHERE),
-    camOffset(glm::vec3(0,0.9f,0.55f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(40.f),
+Player::Player(Camera** c) : GameObject(glm::vec3(0,20,0), glm::vec3(0,0,0), glm::vec3(1,1,1), 1.f, SPHERE),
+    camOffset(glm::vec3(0,0,0.5f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(40.f),
     maxMoveSpd(5.f), rotSpd(60.f), myGun(PlayerGun(this))
 {
     isSticky = false;
@@ -30,15 +30,20 @@ void Player::update(float dt)
         if( connectedComp != nullptr || floorObj != nullptr)
         {
             onFloor = true;
+            //cout << "hasfloor" << endl;
+        }
+        else
+        {
+            //cout << "hasnofloor" << endl;
         }
         glm::vec3 moveDir = getMoveDir();
         glm::vec3 currVel = getVel();
 
         if (rotRight) {
-            rot.y -= rotSpd * dt;
+            nextRot.y -= rotSpd * dt;
         }
         if (rotLeft) {
-            rot.y += rotSpd * dt;
+            nextRot.y += rotSpd * dt;
         }
         if(glm::length(moveDir) >= 0.0001f && glm::length(playerSpd) < maxMoveSpd * dt)
         {
@@ -53,18 +58,23 @@ void Player::update(float dt)
             addForce(dragVel * drag);
             playerSpd = playerSpd - (playerSpd / getMass()) * drag;
         }
-        updateTransform();
+
         if(onFloor)
         {
+            nextVel.y = max(nextVel.y, 0.f);
             if(jumped)
             {
+                cout << "jumped" << endl;
                 translate(glm::vec3(playerUp * jumpStr * dt * 2.f));
                 addForce(playerUp * jumpStr);
 
                 if(floorObj != nullptr)
                 {
-                    glm::vec3 jumpPt = pos + -playerUp;
-                    floorObj->addForce(-playerUp * jumpStr, jumpPt);
+                    if(floorObj->isDynamic)
+                    {
+                        glm::vec3 jumpPt = getPos() + -playerUp;
+                        floorObj->addForce(-playerUp * jumpStr, jumpPt);
+                    }
                     floorObj = nullptr;
                     onFloor = false;
                 }
@@ -72,7 +82,6 @@ void Player::update(float dt)
             //cout << "movedir: " << moveDir.x << ", " << moveDir.z << endl;
             //cout << "Force: " << forces.x << ", " << forces.z << endl;
             this->GameObject::update(dt);
-            vel.y = max(vel.y, 0.f);
             if(floorObj != nullptr) // check if we are still on the floor after updating
             {
                 std::pair<bool,glm::vec3> p = collide(this, floorObj);
@@ -80,6 +89,7 @@ void Player::update(float dt)
                 {
                     floorObj = nullptr;
                     onFloor = false;
+                    cout << "lost Floor" << endl;
                 }
             }
         }
@@ -92,7 +102,7 @@ void Player::update(float dt)
     }
     //cout << "Force y: " << forces.y << endl;
     //cout << "Vel y: " << getVel().y << endl;
-    cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(0,1,0.5f,1));
+    cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(camOffset,1));
     cam->ref = cam->eye + glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
     cam->RecomputeAttributes();
     recomputeAttributes();
@@ -100,7 +110,6 @@ void Player::update(float dt)
     //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
     //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
     //cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl;
-    onFloor = false;
     jumped = false;
 }
 
@@ -170,18 +179,33 @@ void Player::keyReleased(QKeyEvent *e)
 
 void Player::addCollision(GameObject* obj, glm::vec3 collisionPt)
 {
-    GameObject::addCollision(obj, collisionPt);
-    glm::vec3 collVec = collisionPt - getPos();
-    //cout << "collVec: " << collVec.x << ", " << collVec.y << ", " << collVec.z << endl;
-    if(collVec.y < -0.0001f)
+
+    glm::vec3 collVec = obj->getSupport(collisionPt);
+    collVec = glm::vec3(obj->getTransform().rotMat() * glm::vec4(collVec,1)) * obj->getScale();
+    cout << "collvec" << collVec.x << ", " << collVec.y << ", " << collVec.z << endl;
+    glm::vec3 posDiff = glm::vec3(0.f);
+    cout << "Vel y: " << getVel().y * (16.f / 1000.f) << endl;
+    glm::vec3 lastNor = obj->getNor(getLastTransform().position() - obj->getLastTransform().position());
+    for(int i = 0; i < 3; i++)
     {
+        if(glm::abs(lastNor[i]) > 0.f && glm::abs(collVec[i]) < 0.5f)
+        {
+            posDiff[i] = sgn(lastNor[i]) - collVec[i];
+        }
+    }
+    translate(posDiff);
+    cout << "posDiff" << posDiff.x << ", " << posDiff.y << ", " << posDiff.z << endl;
+    cout << "lastNor" << lastNor.x << ", " << lastNor.y << ", " << lastNor.z << endl;
+    if(lastNor.y > 0.f)
+    {
+        cout << "found floor" << endl;
         onFloor = true;
         floorObj = obj;
+        nextVel.y = max(0.f, getVel().y);
         //vel.y = 0.f;
         //forces.y = 0.f;
-        cout << "hasfloor" << endl;
     }
-
+    GameObject::addCollision(obj, collisionPt);
 }
 
 void Player::recomputeAttributes()
@@ -227,4 +251,10 @@ float Player::getMoveSpeed()
 void Player::dynamicCollide()
 {
     tempStop = true;
+}
+
+void Player::setFloor(GameObject *obj)
+{
+    onFloor = true;
+    floorObj = obj;
 }

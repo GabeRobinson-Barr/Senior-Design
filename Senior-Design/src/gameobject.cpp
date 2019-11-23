@@ -5,7 +5,7 @@
 using namespace std;
 
 GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type) :
-    pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)),
+    pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)), lastTransform(Transform(pos, rot, scale)),
     vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(1.f), angDrag(1.f),
     forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type), isDynamic(true),
     connectedComp(nullptr), maxSpd(1000.f)
@@ -29,6 +29,10 @@ GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass
                            -scale.y * scale.x, pow(scale.x,2.f) + pow(scale.z,2.f), -scale.y * scale.z,
                            -scale.z * scale.x, -scale.z * scale.y, pow(scale.x,2.f) + pow(scale.y,2.f));
     }
+    nextPos = pos;
+    nextVel = vel;
+    nextRot = rot;
+    nextRotVel = rotVel;
 }
 
 GameObject::~GameObject()
@@ -125,14 +129,14 @@ std::pair<bool,glm::vec3> GameObject::collide(GameObject *obj1, GameObject *obj2
             cube = obj1;
         }
         glm::vec3 cubSpaceSph = glm::vec3(cube->m_transform.invT() * glm::vec4(sph->getPos(),1));
-        glm::vec3 cubPoint = cube->getSupport(cubSpaceSph);
+        glm::vec3 cubPoint = cube->getSupport(sph->getPos());
         glm::vec3 distVec = glm::abs(cubSpaceSph - cubPoint);
-        float dist = glm::length(distVec * cube->scale);
+        float dist = glm::length(distVec);
 
         if(dist <= sph->scale.x * 0.5f) // divide by 2 twice once for cube and once for sph scale
         {
             collided = true;
-            collisionPt = glm::vec3(cube->m_transform.T() * glm::vec4(cubPoint,1));
+            collisionPt = glm::vec3(cube->getPos() + cubPoint);
         }
 
     }
@@ -151,34 +155,34 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
         glm::vec3 scl = (obj->scale + this->scale) * 0.5f;
         if(obj->isDynamic)
         {
-            glm::vec3 endVel = ((obj->vel * (obj->mass * 2.f)/(obj->mass + this->mass)) +
-                                 (this->vel * (this->mass - obj->mass) / (obj->mass + this->mass)));
-            force = glm::length(endVel - this->vel) * glm::normalize(endVel + objNor) * this->mass;
+            glm::vec3 endVel = ((obj->getVel() * (obj->mass * 2.f)/(obj->mass + this->mass)) +
+                                 (this->getVel() * (this->mass - obj->mass) / (obj->mass + this->mass)));
+            force = glm::length(endVel - this->getVel()) * glm::normalize(endVel + objNor) * this->mass;
 
-            this->translate(1.5f * -vel * (16.f / 1000.f));
+            //this->translate(1.5f * -getVel() * (16.f / 1000.f));
             // this series of statements checks if the player is moving towards this object and makes
             // sure they cant collide multiple times
-            Player* player = dynamic_cast<Player*>(this);
+            Player* player = dynamic_cast<Player*>(obj);
             if(player != nullptr)
             {
+                rewindPos();
                 player->dynamicCollide();
-                glm::vec3 moveDir = player->getMoveDir();
+                //glm::vec3 moveDir = player->getMoveDir();
                 glm::vec3 playerMove = player->getVel();
-                if(glm::length(moveDir) > 0.0001f)
+                /*if(glm::length(moveDir) > 0.0001f)
                 {
                      playerMove += glm::normalize(moveDir) * player->getMoveSpeed();
-                }
-                if(glm::dot(playerMove, obj->getPos() - getPos()) > 0.f)
+                }*/
+                if(glm::dot(playerMove, getPos() - player->getPos()) > 0.f)
                 {
-                    this->translate(-1.5f * playerMove * (16.f / 1000.f));
                     obj->translate(3.f * playerMove * (16.f / 1000.f));
-                    force += -playerMove * this->mass;
+                    //force += playerMove * this->mass;
                 }
             }
         }
         else
         {
-            float fMag = glm::dot(-vel, objNor) * this->mass;
+            float fMag = glm::dot(-nextVel, objNor) * this->mass;
             if(fMag < -0.0001f)
             {
                 force = glm::vec3(0.f);
@@ -189,6 +193,7 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
                 Player* player = dynamic_cast<Player*>(this);
                 if(player != nullptr)
                 {
+
                     if(player->objIsFloor(obj))
                     {
                         force = glm::vec3(0.f);
@@ -196,12 +201,11 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
                 }
                 else if(glm::dot(getVel(), obj->getPos() - getPos()) > 0.f)
                 {
-                    translate(3.f * -vel * (16.f / 1000.f));
                     setVel(-vel);
-                    disableOne();
+                    //disableOne();
+                    rewindPos();
                 }
             }
-            this->translate(1.5f * -vel * (16.f / 1000.f));
         }
         this->addForce(force, collisionPt);
     }
@@ -260,10 +264,10 @@ void GameObject::addStickyCollision(GameObject *obj1, GameObject *obj2, glm::vec
         mass2 = obj2->connectedComp->getMass();
         obj2->connectedComp->addObj(obj1);
     }
-    glm::vec3 endForce = ((obj1->vel * mass1) + (obj2->vel * mass2));
-    collisionPt = (glm::length(obj1->vel * mass1) * obj1->getPos()) - (glm::length(obj2->vel * mass2) * obj2->getPos());
+    glm::vec3 endForce = ((obj1->getVel() * mass1) + (obj2->getVel() * mass2));
+    collisionPt = (glm::length(obj1->getVel() * mass1) * obj1->getPos()) - (glm::length(obj2->getVel() * mass2) * obj2->getPos());
     // Apply the added force to the component
-    glm::vec3 force = endForce - (obj1->connectedComp->mass * obj1->connectedComp->vel);
+    glm::vec3 force = endForce - (obj1->connectedComp->mass * obj1->connectedComp->getVel());
     // using the positions because we are adding them to the connected object and it doesnt rotate otherwise
     obj1->connectedComp->addForce(force, collisionPt);
 }
@@ -273,7 +277,7 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
     glm::vec3 supVec;
     if (geomType == CUBE)
     {
-        v = glm::vec3(glm::inverse(m_transform.rotMat()) * glm::vec4(v,1));
+        v = glm::vec3(m_transform.invT() * glm::vec4(v,1));
         supVec = glm::vec3(sgn(v.x)*0.5f, sgn(v.y)*0.5f, sgn(v.z)*0.5f);
         if(abs(v.x) < 0.5f) {supVec.x = v.x;}
         if(abs(v.y) < 0.5f) {supVec.y = v.y;}
@@ -305,62 +309,60 @@ glm::vec3 GameObject::getSupport(glm::vec3 v)
 
 void GameObject::update(float dt)
 {
-        glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
-        if(!isDynamic)
-        {
-            forces = glm::vec3(0.f);
-            torque = glm::vec3(0.f);
-            updateTransform();
-            updated = true;
-            return;
-        }
-        if(updated)
-        {
-            return;
-        }
+    glm::vec3 n_Pos, n_Vel, n_Rot, n_RotVel;
+    if(!isDynamic)
+    {
+        forces = glm::vec3(0.f);
+        torque = glm::vec3(0.f);
+        updateTransform();
+        updated = true;
+        return;
+    }
+    if(updated)
+    {
+        return;
+    }
         // update through its connected component if possible
-        if(connectedComp != nullptr)
-        {
-            forces = glm::vec3(0.f);
-            torque = glm::vec3(0.f);
-            connectedComp->update(dt);
-            return;
-        }
-        /*Player* p = dynamic_cast<Player*>(this);
-        if(p == nullptr)
-        {
-            cout << "objpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
-        }
-        else
-        {
-            cout << "playerpos: " << pos.x << ", " << pos.y << ", " << pos.z << endl;
-        }*/
-        //cout << "adding force" << endl;
-        n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
-        n_Vel = vel + (forces / mass) * dt;
+    if(connectedComp != nullptr)
+    {
+        forces = glm::vec3(0.f);
+        torque = glm::vec3(0.f);
+        connectedComp->update(dt);
+        return;
+    }
 
-        glm::vec3 rotMoment = moment;
-        if(geomType == CUBE)
-        {
-            rotMoment = glm::vec3(m_transform.rotMat() * glm::vec4(moment,1));
-        }
-        n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
-        n_RotVel = rotVel + (torque / rotMoment) * dt;
+    pos = nextPos;
+    vel = nextVel;
+    rot = nextRot;
+    rotVel = nextRotVel;
+    lastTransform = Transform(pos, rot, scale);
 
-        pos = n_Pos;
-        vel = n_Vel;
-        float velMag = glm::length(vel);
-        if(velMag >= maxVel)
-        {
-            vel = maxVel * glm::normalize(vel);
-        }
-        rot = n_Rot;
-        rotVel = n_RotVel;
+    n_Pos = pos + vel * dt + 0.5f * (forces / mass) * dt * dt;
+    n_Vel = vel + (forces / mass) * dt;
+
+    glm::vec3 rotMoment = moment;
+    if(geomType == CUBE)
+    {
+        rotMoment = glm::vec3(m_transform.rotMat() * glm::vec4(moment,1));
+    }
+    n_Rot = rot + rotVel * dt + 0.5f * (torque / rotMoment) * dt * dt;
+    n_RotVel = rotVel + (torque / rotMoment) * dt;
+
+    nextPos = n_Pos;
+    nextVel = n_Vel;
+    float velMag = glm::length(nextVel);
+    if(velMag >= maxVel)
+    {
+        nextVel = maxVel * glm::normalize(nextVel);
+    }
+    nextRot = n_Rot;
+    nextRotVel = n_RotVel;
     updateTransform();
     forces = glm::vec3(0.f); // reset the forces
     torque = glm::vec3(0.f);
     hasCollision = false;
     updated = true;
+    rewound = false;
 }
 
 glm::vec3 GameObject::getNor(glm::vec3 vec)
@@ -369,18 +371,18 @@ glm::vec3 GameObject::getNor(glm::vec3 vec)
     {
         glm::vec3 norVec = glm::vec3(glm::inverse(m_transform.rotMat()) * glm::vec4(vec,1));
         norVec = glm::vec3(1.f * sgn(norVec.x),0,0);
-        float maxComp = glm::abs(vec.x);
+        float maxComp = glm::abs(vec.x) / scale.x;
         for(int i = 1; i < 3; i++)
         {
-            if(glm::abs(glm::abs(vec[i]) - maxComp) <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
+            if(glm::abs(glm::abs(vec[i] / scale[i]) - maxComp) <= 0.0001f) // if 2 components are equal (ignoring floating pt error)
             {
                 norVec[i] = 1.f * sgn(vec[i]);
             }
-            else if(glm::abs(vec[i]) > maxComp)
+            else if(glm::abs(vec[i] / scale[i]) > maxComp)
             {
                 norVec = glm::vec3(0);
                 norVec[i] = 1.f * sgn(vec[i]);
-                maxComp = glm::abs(vec[i]);
+                maxComp = glm::abs(vec[i] / scale[i]);
             }
         }
         norVec = glm::vec3(m_transform.rotMat() * glm::vec4(norVec,1));
@@ -446,27 +448,32 @@ glm::vec3 GameObject::getForce()
 
 glm::vec3 GameObject::getPos()
 {
-    return m_transform.position();
+    return nextPos;
 }
 
 glm::vec3 GameObject::getRot()
 {
-    return rot;
+    return nextRot;
 }
 
 glm::vec3 GameObject::getVel()
 {
-    return vel;
+    return nextVel;
 }
 
 glm::vec3 GameObject::getRotVel()
 {
-    return rotVel;
+    return nextRotVel;
 }
 
 Transform GameObject::getTransform()
 {
     return m_transform;
+}
+
+Transform GameObject::getLastTransform()
+{
+    return lastTransform;
 }
 
 glm::vec4 GameObject::getColor()
@@ -488,19 +495,19 @@ glm::vec3 GameObject::getScale()
 
 void GameObject::translate(glm::vec3 t)
 {
-    pos += t;
+    nextPos += t;
     updateTransform();
 }
 
 void GameObject::updateTransform()
 {
-    m_transform = Transform(pos, rot, scale);
+    m_transform = Transform(nextPos, nextRot, scale);
 }
 
 void GameObject::updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s)
 {
-    rot = r;
-    pos = p;
+    nextRot = r;
+    nextPos = p;
     scale = s;
     m_transform = Transform(p, r, s);
 }
@@ -512,12 +519,12 @@ float GameObject::getMass()
 
 void GameObject::setVel(glm::vec3 v)
 {
-    vel = v;
+    nextVel = v;
 }
 
 void GameObject::setRotVel(glm::vec3 rVel)
 {
-    rotVel = rVel;
+    nextRotVel = rVel;
 }
 
 void GameObject::setDynamic(bool b)
@@ -528,4 +535,15 @@ void GameObject::setDynamic(bool b)
 void GameObject::disableOne()
 {
     noColl = true;
+}
+
+void GameObject::rewindPos()
+{
+    if(!rewound)
+    {
+        nextPos = pos;
+        nextRot = rot;
+        updateTransform();
+        rewound = true;
+    }
 }
