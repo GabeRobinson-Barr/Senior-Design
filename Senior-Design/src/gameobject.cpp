@@ -131,7 +131,7 @@ std::pair<bool,glm::vec3> GameObject::collide(GameObject *obj1, GameObject *obj2
         glm::vec3 cubSpaceSph = glm::vec3(cube->m_transform.invT() * glm::vec4(sph->getPos(),1));
         glm::vec3 cubPoint = cube->getSupport(sph->getPos());
         glm::vec3 distVec = glm::abs(cubSpaceSph - cubPoint);
-        float dist = glm::length(distVec);
+        float dist = glm::length(distVec * cube->scale);
 
         if(dist <= sph->scale.x * 0.5f) // divide by 2 twice once for cube and once for sph scale
         {
@@ -162,10 +162,14 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
             //this->translate(1.5f * -getVel() * (16.f / 1000.f));
             // this series of statements checks if the player is moving towards this object and makes
             // sure they cant collide multiple times
-            Player* player = dynamic_cast<Player*>(obj);
-            if(player != nullptr)
+            Player* player = dynamic_cast<Player*>(this);
+            if(player == nullptr)
             {
                 rewindPos();
+            }
+            player = dynamic_cast<Player*>(obj);
+            if(player != nullptr)
+            {
                 player->dynamicCollide();
                 //glm::vec3 moveDir = player->getMoveDir();
                 glm::vec3 playerMove = player->getVel();
@@ -175,13 +179,16 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
                 }*/
                 if(glm::dot(playerMove, getPos() - player->getPos()) > 0.f)
                 {
-                    obj->translate(3.f * playerMove * (16.f / 1000.f));
-                    //force += playerMove * this->mass;
+                    translate(3.f * playerMove * (16.f / 1000.f));
+                    force += 2.f * playerMove * this->mass;
+                    cout << "objpos" << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+                    disableOne();
                 }
             }
         }
         else
         {
+
             float fMag = glm::dot(-nextVel, objNor) * this->mass;
             if(fMag < -0.0001f)
             {
@@ -189,7 +196,7 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
             }
             else
             {
-                force = fMag * objNor;
+                //force = fMag * objNor;
                 Player* player = dynamic_cast<Player*>(this);
                 if(player != nullptr)
                 {
@@ -201,7 +208,10 @@ void GameObject::addCollision(GameObject *obj, glm::vec3 collisionPt)
                 }
                 else if(glm::dot(getVel(), obj->getPos() - getPos()) > 0.f)
                 {
-                    setVel(-vel);
+                    cout << "objpos" << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+                    cout << "collpt" << collisionPt.x << ", " << collisionPt.y << ", " << collisionPt.z << endl;
+                    force = glm::vec3(0.f);
+                    setVel(glm::reflect(vel,objNor));
                     //disableOne();
                     rewindPos();
                 }

@@ -64,7 +64,7 @@ void Player::update(float dt)
             nextVel.y = max(nextVel.y, 0.f);
             if(jumped)
             {
-                cout << "jumped" << endl;
+                //cout << "jumped" << endl;
                 translate(glm::vec3(playerUp * jumpStr * dt * 2.f));
                 addForce(playerUp * jumpStr);
 
@@ -89,7 +89,7 @@ void Player::update(float dt)
                 {
                     floorObj = nullptr;
                     onFloor = false;
-                    cout << "lost Floor" << endl;
+                    //cout << "lost Floor" << endl;
                 }
             }
         }
@@ -179,31 +179,48 @@ void Player::keyReleased(QKeyEvent *e)
 
 void Player::addCollision(GameObject* obj, glm::vec3 collisionPt)
 {
-
-    glm::vec3 collVec = obj->getSupport(collisionPt);
-    collVec = glm::vec3(obj->getTransform().rotMat() * glm::vec4(collVec,1)) * obj->getScale();
-    cout << "collvec" << collVec.x << ", " << collVec.y << ", " << collVec.z << endl;
-    glm::vec3 posDiff = glm::vec3(0.f);
-    cout << "Vel y: " << getVel().y * (16.f / 1000.f) << endl;
     glm::vec3 lastNor = obj->getNor(getLastTransform().position() - obj->getLastTransform().position());
-    for(int i = 0; i < 3; i++)
+    if(!obj->isDynamic)
     {
-        if(glm::abs(lastNor[i]) > 0.f && glm::abs(collVec[i]) < 0.5f)
+        glm::vec3 collVec = obj->getSupport(collisionPt);
+        collVec = glm::vec3(obj->getTransform().rotMat() * glm::vec4(collVec,1)) * obj->getScale();
+        //cout << "collvec" << collVec.x << ", " << collVec.y << ", " << collVec.z << endl;
+        glm::vec3 posDiff = glm::vec3(0.f);
+        glm::vec3 velDiff = getVel();
+        //cout << "Vel y: " << getVel().y * (16.f / 1000.f) << endl;
+        for(int i = 0; i < 3; i++)
         {
-            posDiff[i] = sgn(lastNor[i]) - collVec[i];
+            if(glm::abs(lastNor[i]) > 0.f && glm::abs(collVec[i]) < 0.5f)
+            {
+                posDiff[i] = lastNor[i] - collVec[i];
+                if(lastNor[i] > 0.f)
+                {
+                    velDiff[i] = max(0.f, velDiff[i]);
+                }
+                else
+                {
+                    velDiff[i] = min(0.f, velDiff[i]);
+                }
+            }
         }
+        translate(posDiff);
+        setVel(velDiff);
+        //cout << "posDiff" << posDiff.x << ", " << posDiff.y << ", " << posDiff.z << endl;
+        //cout << "lastNor" << lastNor.x << ", " << lastNor.y << ", " << lastNor.z << endl;
     }
-    translate(posDiff);
-    cout << "posDiff" << posDiff.x << ", " << posDiff.y << ", " << posDiff.z << endl;
-    cout << "lastNor" << lastNor.x << ", " << lastNor.y << ", " << lastNor.z << endl;
     if(lastNor.y > 0.f)
     {
-        cout << "found floor" << endl;
+        //cout << "found floor" << endl;
         onFloor = true;
         floorObj = obj;
-        nextVel.y = max(0.f, getVel().y);
+        //nextVel.y = max(0.f, getVel().y);
         //vel.y = 0.f;
         //forces.y = 0.f;
+    }
+    else if(obj == floorObj)
+    {
+        onFloor = false;
+        floorObj = nullptr;
     }
     GameObject::addCollision(obj, collisionPt);
 }
