@@ -64,7 +64,7 @@ void Player::update(float dt)
             addForce(pForce);
             playerSpd = playerSpd + (pForce / getMass()) * dt;
         }
-        else if (glm::length(getVel()) >= 0.0001f)
+        else if (glm::length(getVel()) >= 0.0001f && glm::length(playerSpd) >= maxMoveSpd * dt)
         {
             glm::vec3 dragVel = -getVel();
             dragVel.y = 0.f;
@@ -117,10 +117,10 @@ void Player::update(float dt)
     //cout << "Vel y: " << getVel().y << endl;
     recomputeCam();
     recomputeAttributes();
-    cout << "Camrot X: " << camRot.x << endl;
-    cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
-    cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
-    cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n' << endl;
+    //cout << "Camrot X: " << camRot.x << endl;
+    //cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
+    //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
+    //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n' << endl;
     //cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl << endl;
     jumped = false;
 }

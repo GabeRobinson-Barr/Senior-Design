@@ -6,7 +6,7 @@ using namespace std;
 
 GameObject::GameObject(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale, float mass, MeshType type) :
     pos(pos), rot(rot), scale(scale), m_transform(Transform(pos, rot, scale)), lastTransform(Transform(pos, rot, scale)),
-    vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(1.f), angDrag(1.f),
+    vel(glm::vec3(0.f)),  rotVel(glm::vec3(0.f)), mass(mass), drag(10.f), angDrag(1.f),
     forces(glm::vec3(0.f)), torque(glm::vec3(0.f)), geomType(type), isDynamic(true),
     connectedComp(nullptr), maxSpd(1000.f)
 {
