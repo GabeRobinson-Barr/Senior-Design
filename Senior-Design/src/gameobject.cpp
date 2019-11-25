@@ -512,6 +512,7 @@ void GameObject::translate(glm::vec3 t)
 void GameObject::updateTransform()
 {
     m_transform = Transform(nextPos, nextRot, scale);
+    lastTransform = Transform(pos, rot, scale);
 }
 
 void GameObject::updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s)

@@ -7,6 +7,7 @@ Player::Player(Camera** c) : GameObject(glm::vec3(0,20,0), glm::vec3(0,0,0), glm
     camOffset(glm::vec3(0,0,0.5f)), cam(*c), currBoost(60.f), maxBoost(60.f), jumpStr(40.f),
     maxMoveSpd(5.f), rotSpd(60.f), myGun(PlayerGun(this))
 {
+    camRot = getRot();
     isSticky = false;
     cam = new Camera((*c)->width, (*c)->height, pos + camOffset, pos + glm::vec3(0,0,1), (*c)->world_up);
     *c = cam;
@@ -44,6 +45,18 @@ void Player::update(float dt)
         }
         if (rotLeft) {
             nextRot.y += rotSpd * dt;
+        }
+        if (rotUp) {
+            if(camRot.x >= -80.f)
+            {
+                camRot.x -= camRotSpd * dt;
+            }
+        }
+        if (rotDown) {
+            if (camRot.x <= 80.f)
+            {
+                camRot.x += camRotSpd * dt;
+            }
         }
         if(glm::length(moveDir) >= 0.0001f && glm::length(playerSpd) < maxMoveSpd * dt)
         {
@@ -102,14 +115,13 @@ void Player::update(float dt)
     }
     //cout << "Force y: " << forces.y << endl;
     //cout << "Vel y: " << getVel().y << endl;
-    cam->eye = pos + glm::vec3(m_transform.rotMat() * glm::vec4(camOffset,1));
-    cam->ref = cam->eye + glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
-    cam->RecomputeAttributes();
+    recomputeCam();
     recomputeAttributes();
-    //cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
-    //cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
-    //cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n';
-    //cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl;
+    cout << "Camrot X: " << camRot.x << endl;
+    cout << "Eye: " << cam->eye.x << ", " << cam->eye.y << ", " << cam->eye.z << '\n';
+    cout << "Ref: " << cam->ref.x << ", " << cam->ref.y << ", " << cam->ref.z << '\n';
+    cout << "Camup: " << cam->up.x << ", " << cam->up.y << ", " << cam->up.z << '\n' << endl;
+    //cout << "playerUp" << playerUp.x << ", " << playerUp.y << ", " << playerUp.z << endl << endl;
     jumped = false;
 }
 
@@ -131,11 +143,11 @@ void Player::keyPressed(QKeyEvent *e)
             rotRight = true;
         } else if (e->key() == Qt::Key_Left) {
             rotLeft = true;
-        } /*else if (e->key() == Qt::Key_Up) {
-            key_Up = true;
+        } else if (e->key() == Qt::Key_Up) {
+            rotUp = true;
         } else if (e->key() == Qt::Key_Down) {
-            key_Down = true;
-        } else if (e->key() == Qt::Key_1) {
+            rotDown = true;
+        } /*else if (e->key() == Qt::Key_1) {
             key_1 = true;
         } else if (e->key() == Qt::Key_2) {
             key_2 = true;
@@ -158,11 +170,11 @@ void Player::keyReleased(QKeyEvent *e)
             rotRight = false;
         } else if (e->key() == Qt::Key_Left) {
             rotLeft = false;
-        } /*else if (e->key() == Qt::Key_Up) {
-            key_Up = true;
+        } else if (e->key() == Qt::Key_Up) {
+            rotUp = false;
         } else if (e->key() == Qt::Key_Down) {
-            key_Down = true;
-        } else if (e->key() == Qt::Key_1) {
+            rotDown = false;
+        } /*else if (e->key() == Qt::Key_1) {
             key_1 = true;
         } else if (e->key() == Qt::Key_2) {
             key_2 = true;
@@ -227,9 +239,18 @@ void Player::addCollision(GameObject* obj, glm::vec3 collisionPt)
 
 void Player::recomputeAttributes()
 {
-    playerUp = glm::vec3(m_transform.rotMat() * glm::vec4(cam->world_up,1));
-    playerFor = glm::vec3(m_transform.rotMat() * glm::vec4(0,0,1,1));
+    playerUp = glm::vec3(lastTransform.rotMat() * glm::vec4(cam->world_up,1));
+    playerFor = glm::vec3(lastTransform.rotMat() * glm::vec4(0,0,1,1));
     playerRight = glm::cross(playerFor, playerUp);
+}
+
+void Player::recomputeCam()
+{
+    cam->eye = pos + glm::vec3(lastTransform.rotMat() * glm::vec4(camOffset,1));
+    glm::vec3 refVec = glm::vec3(lastTransform.rotMat() * glm::rotate(glm::mat4(), glm::radians(camRot.x), glm::vec3(1,0,0)) *
+                                 glm::vec4(0,0,1,1));
+    cam->ref = cam->eye + refVec;
+    cam->RecomputeAttributes();
 }
 
 bool Player::objIsFloor(GameObject* obj)

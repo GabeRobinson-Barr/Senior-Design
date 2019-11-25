@@ -16,6 +16,7 @@ public:
     void addForce(glm::vec3 force);
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
     void recomputeAttributes();
+    void recomputeCam();
     bool objIsFloor(GameObject* obj);
     glm::vec3 getMoveDir();
     float getMoveSpeed();
@@ -49,6 +50,7 @@ protected:
     float jumpStr;
     float maxMoveSpd; // Max speed player can go
     float rotSpd;
+    float camRotSpd = 20.f;
     float playerGrav = 0.3f;
     float speedInc = 1.f;
     Camera* cam;
@@ -57,6 +59,7 @@ protected:
     glm::vec3 playerUp;
     glm::vec3 playerSpd = glm::vec3(0.f);
     glm::vec3 forceSpd = glm::vec3(0.f);
+    glm::vec3 camRot;
 };
 
 #endif // PLAYER_H
