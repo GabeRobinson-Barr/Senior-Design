@@ -525,7 +525,15 @@ void GameObject::updateTransform(glm::vec3 p, glm::vec3 r, glm::vec3 s)
 
 float GameObject::getMass()
 {
-    return mass;
+    if(connectedComp != nullptr)
+    {
+        return connectedComp->mass;
+    }
+    else
+    {
+        return mass;
+    }
+
 }
 
 void GameObject::setVel(glm::vec3 v)

@@ -22,13 +22,14 @@ public:
     void playerCollision();
 
 protected:
-    //Player* myPlayer;
+    GameObject* myPlayer;
     glm::vec3 castVec;
     float fireSpd;
     bool isFired;
     bool firing;
     bool isAttached;
     bool retracting;
+    float ropeLen = 0.f;
 
 
 };

@@ -4,7 +4,7 @@
 PlayerGun::PlayerGun(Player* p) : GameObject(p->getPos(), p->getRot(), glm::vec3(0.2f,0.4f,0.2f), 1.f, SPHERE)
 {
     this->isSticky = true;
-
+    myPlayer = p;
 }
 
 PlayerGun::~PlayerGun()
@@ -15,6 +15,27 @@ PlayerGun::~PlayerGun()
 void PlayerGun::update(float dt)
 {
     GameObject::update(dt);
+    if(connectedComp != nullptr && firing)
+    {
+        firing = false;
+        ropeLen = glm::length(getPos() - myPlayer->getPos());
+    }
+    if(retracting)
+    {
+        ropeLen -= fireSpd * dt;
+        glm::vec3 currVec = getPos() - myPlayer->getPos();
+        if(ropeLen <= glm::length(currVec))
+        {
+            //float lenDiff = glm::length(currVec) - ropeLen;
+            //translate(-lenDiff * glm::normalize(currVec));
+            float totMass = getMass() + myPlayer->getMass();
+            //setVel()
+            /*glm::vec3 velDiff = (-fireSpd * myPlayer->getMass() * glm::normalize(currVec)) - getVel();
+            addForce(velDiff, myPlayer->getPos());
+            glm::vec3 playerVelDiff = (fireSpd * myPlayer)
+            myPlayer->addForce(fireSpd * totMass * glm::normalize(currVec), getPos());*/
+        }
+    }
 }
 
 void PlayerGun::addForce(glm::vec3 force, glm::vec3 collPt)
