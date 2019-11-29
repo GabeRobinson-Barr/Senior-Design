@@ -126,6 +126,7 @@ std::vector<GameObject*> Terrain::getObjects()
 void Terrain::addPlayer(Player *p)
 {
     root.add(p);
+    root.add(p->getGun());
 }
 
 void Terrain::setupLevel()
@@ -133,10 +134,10 @@ void Terrain::setupLevel()
     GameObject* obj = new GameObject(glm::vec3(0,-0.5f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
-    /*obj = new GameObject(glm::vec3(0,250.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
+    obj = new GameObject(glm::vec3(0,150.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
-    obj = new GameObject(glm::vec3(60.f,3.f,3.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
+    /*obj = new GameObject(glm::vec3(60.f,3.f,3.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
     root.add(obj);
     obj->addForce(glm::vec3(-8.f,1.f,0),obj->getPos() + glm::vec3(-1.f,-0.1f,0));
     obj = new GameObject(glm::vec3(0,10.f,0), glm::vec3(0.f), glm::vec3(10.f), 1.f, CUBE);

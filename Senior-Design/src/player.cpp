@@ -64,7 +64,7 @@ void Player::update(float dt)
             addForce(pForce);
             playerSpd = playerSpd + (pForce / getMass()) * dt;
         }
-        else if (glm::length(getVel()) >= 0.0001f && glm::length(playerSpd) >= maxMoveSpd * dt)
+        else if (glm::length(getVel()) >= 0.0001f)
         {
             glm::vec3 dragVel = -getVel();
             dragVel.y = 0.f;
@@ -109,7 +109,10 @@ void Player::update(float dt)
         else
         {
             //cout << "not grounded" << endl;
-            addForce(-playerUp * playerGrav * mass);
+            if(!myGun.retracting)
+            {
+                addForce(-playerUp * playerGrav * mass);
+            }
             this->GameObject::update(dt);
         }
     }
@@ -147,11 +150,18 @@ void Player::keyPressed(QKeyEvent *e)
             rotUp = true;
         } else if (e->key() == Qt::Key_Down) {
             rotDown = true;
-        } /*else if (e->key() == Qt::Key_1) {
-            key_1 = true;
-        } else if (e->key() == Qt::Key_2) {
-            key_2 = true;
-        }*/ else if (e->key() == Qt::Key_W) {
+        } else if (e->key() == Qt::Key_F) {
+            if(!myGun.isFired)
+            {
+                myGun.fire(cam->look, getPos());
+            }
+            else
+            {
+                myGun.retract(getPos());
+            }
+        } else if (e->key() == Qt::Key_E) {
+            myGun.detach();
+        } else if (e->key() == Qt::Key_W) {
             moveFor = true;
         } else if (e->key() == Qt::Key_S) {
             moveBack = true;
@@ -295,4 +305,9 @@ void Player::setFloor(GameObject *obj)
 {
     onFloor = true;
     floorObj = obj;
+}
+
+GameObject* Player::getGun()
+{
+    return &myGun;
 }

@@ -22,6 +22,7 @@ public:
     float getMoveSpeed();
     void dynamicCollide();
     void setFloor(GameObject* obj);
+    GameObject* getGun();
 
 protected:
     //Weapon m_weapon;

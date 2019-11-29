@@ -16,19 +16,21 @@ public:
     void addForce(glm::vec3 force, glm::vec3 collPt) override;
     void addForce(glm::vec3 force);
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
+    glm::vec4 getColor() override;
     void fire(glm::vec3 castVec, glm::vec3 castPos);
     void retract(glm::vec3 playerPos);
     void detach();
     void playerCollision();
+    bool isFired = false;
+    bool retracting = false;
 
 protected:
     GameObject* myPlayer;
     glm::vec3 castVec;
-    float fireSpd;
-    bool isFired;
-    bool firing;
-    bool isAttached;
-    bool retracting;
+    float fireSpd = 20.f;
+    bool firing = false;
+    bool isAttached = false;
+
     float ropeLen = 0.f;
 
 

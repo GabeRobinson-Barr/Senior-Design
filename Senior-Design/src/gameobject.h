@@ -65,7 +65,7 @@ public:
     float getMass();
     Transform getTransform();
     Transform getLastTransform();
-    glm::vec4 getColor();
+    virtual glm::vec4 getColor();
     void translate(glm::vec3 t);
     void setVel(glm::vec3 v);
     void setRotVel(glm::vec3 rVel);

@@ -1,5 +1,7 @@
 #include "playergun.h"
 #include "player.h"
+#include <iostream>
+using namespace std;
 
 PlayerGun::PlayerGun(Player* p) : GameObject(p->getPos(), p->getRot(), glm::vec3(0.2f,0.4f,0.2f), 1.f, SPHERE)
 {
@@ -14,28 +16,75 @@ PlayerGun::~PlayerGun()
 
 void PlayerGun::update(float dt)
 {
-    GameObject::update(dt);
-    if(connectedComp != nullptr && firing)
+    //GameObject::update(dt);
+    if(!isFired)
     {
-        firing = false;
-        ropeLen = glm::length(getPos() - myPlayer->getPos());
+        cout << "unfired" << endl;
+        GameObject::updateTransform(myPlayer->getPos(), myPlayer->getRot(), scale);
+        setVel(myPlayer->getVel());
+        setRotVel(myPlayer->getRotVel());
+        if(connectedComp != nullptr)
+        {
+            connectedComp->removeAll();
+        }
     }
-    if(retracting)
+    else if(firing)
     {
+        cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+        float currLen = glm::length(getPos() - myPlayer->getPos());
+        if(connectedComp != nullptr)
+        {
+            firing = false;
+            ropeLen = currLen;
+            //setVel(myPlayer->getVel());
+            isAttached = true;
+            cout << "hit" << endl;
+            if(!connectedComp->isDynamic)
+            {
+                cout << "nondynamic" << endl;
+            }
+        }
+        else if (currLen >= 500.f)
+        {
+            firing = false;
+            ropeLen = currLen;
+            setVel(myPlayer->getVel());
+            cout << "maxlen" << endl;
+        }
+    }
+    else if(retracting)
+    {
+        cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+        cout << "player pos: " << myPlayer->getPos().x << ", " << myPlayer->getPos().y << ", " << myPlayer->getPos().z << endl;
         ropeLen -= fireSpd * dt;
         glm::vec3 currVec = getPos() - myPlayer->getPos();
         if(ropeLen <= glm::length(currVec))
         {
-            //float lenDiff = glm::length(currVec) - ropeLen;
-            //translate(-lenDiff * glm::normalize(currVec));
-            float totMass = getMass() + myPlayer->getMass();
-            //setVel()
-            /*glm::vec3 velDiff = (-fireSpd * myPlayer->getMass() * glm::normalize(currVec)) - getVel();
-            addForce(velDiff, myPlayer->getPos());
-            glm::vec3 playerVelDiff = (fireSpd * myPlayer)
-            myPlayer->addForce(fireSpd * totMass * glm::normalize(currVec), getPos());*/
+            currVec = glm::normalize(currVec);
+            glm::vec3 spdVec = -getVel() + myPlayer->getVel();
+            float currSpd = glm::length(spdVec) * glm::dot(currVec, glm::normalize(spdVec));
+            if(currSpd < fireSpd)
+            {
+                glm::vec3 spdDiff = (fireSpd * currVec) - spdVec;
+                if(connectedComp != nullptr && !connectedComp->isDynamic)
+                {
+
+                    myPlayer->addForce(spdDiff, getPos());
+                }
+                else if(isAttached)
+                {
+                    addForce(-spdDiff / getMass(), myPlayer->getPos());
+                    myPlayer->addForce(spdDiff / myPlayer->getMass(), getPos());
+                }
+                else
+                {
+                    addForce(-spdDiff, myPlayer->getPos());
+                }
+                ropeLen = glm::length(getPos() - myPlayer->getPos());
+            }
         }
     }
+    GameObject::update(dt);
 }
 
 void PlayerGun::addForce(glm::vec3 force, glm::vec3 collPt)
@@ -63,24 +112,53 @@ void PlayerGun::fire(glm::vec3 castVec, glm::vec3 castPos)
     }
     isFired = true;
     firing = true;
+    translate(castVec * 1.5f);
     addForce(glm::normalize(castVec) * fireSpd);
     this->castVec = castVec;
 }
 
 void PlayerGun::retract(glm::vec3 playerPos)
 {
-    retracting = true;
-    addForce(glm::normalize(getPos() - playerPos) * fireSpd, playerPos);
+    if(isFired)
+    {
+        cout << "retracting" << endl;
+        firing = false;
+        retracting = true;
+    }
+
 }
 
 void PlayerGun::playerCollision()
 {
-    isFired = false;
-    retracting = false;
-    isAttached = false;
-    // when this returns to the player destroy its connected objects
-    if(connectedComp != nullptr)
+    if(isFired)
     {
-        connectedComp->removeAll();
+        isFired = false;
+        firing = false;
+        retracting = false;
+        isAttached = false;
+
+        // when this returns to the player destroy its connected objects
+        if(connectedComp != nullptr)
+        {
+            connectedComp->removeAll();
+        }
     }
+}
+
+void PlayerGun::detach()
+{
+    if(isAttached)
+    {
+        isAttached = false;
+        retracting = true;
+        if(connectedComp != nullptr)
+        {
+            connectedComp->removeAll();
+        }
+    }
+}
+
+glm::vec4 PlayerGun::getColor()
+{
+    return glm::vec4(1.f, 1.f, 1.f, 1.f);
 }

@@ -41,6 +41,24 @@ GameObject::~GameObject()
 
 std::pair<bool,glm::vec3> GameObject::collide(GameObject *obj1, GameObject *obj2)
 {
+    Player* p1 = dynamic_cast<Player*>(obj1);
+    Player* p2 = dynamic_cast<Player*>(obj2);
+    if(p1 != nullptr)
+    {
+        PlayerGun* pg = dynamic_cast<PlayerGun*>(obj2);
+        if(p1->getGun() == pg && !pg->isFired)
+        {
+            return std::make_pair(false, glm::vec3(0));
+        }
+    }
+    else if(p2 != nullptr)
+    {
+        PlayerGun* pg = dynamic_cast<PlayerGun*>(obj1);
+        if(p2->getGun() == pg && !pg->isFired)
+        {
+            return std::make_pair(false, glm::vec3(0));
+        }
+    }
     bool collided = false;
     glm::vec3 collisionPt = glm::vec3(0);
 
