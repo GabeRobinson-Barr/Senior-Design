@@ -55,14 +55,18 @@ void PlayerGun::update(float dt)
     else if(retracting)
     {
         cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
-        cout << "player pos: " << myPlayer->getPos().x << ", " << myPlayer->getPos().y << ", " << myPlayer->getPos().z << endl;
+        cout << "player vel: " << myPlayer->getVel().x << ", " << myPlayer->getVel().y << ", " << myPlayer->getVel().z << endl;
         ropeLen -= fireSpd * dt;
         glm::vec3 currVec = getPos() - myPlayer->getPos();
         if(ropeLen <= glm::length(currVec))
         {
             currVec = glm::normalize(currVec);
             glm::vec3 spdVec = -getVel() + myPlayer->getVel();
-            float currSpd = glm::length(spdVec) * glm::dot(currVec, glm::normalize(spdVec));
+            float currSpd = 0.f;
+            if(glm::length(spdVec) > 0.f)
+            {
+                currSpd = glm::length(spdVec) * glm::dot(currVec, glm::normalize(spdVec));
+            }
             if(currSpd < fireSpd)
             {
                 glm::vec3 spdDiff = (fireSpd * currVec) - spdVec;

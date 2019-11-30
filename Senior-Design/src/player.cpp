@@ -64,7 +64,7 @@ void Player::update(float dt)
             addForce(pForce);
             playerSpd = playerSpd + (pForce / getMass()) * dt;
         }
-        else if (glm::length(getVel()) >= 0.0001f)
+        else if (glm::length(getVel()) >= 0.0001f && !myGun.retracting)
         {
             glm::vec3 dragVel = -getVel();
             dragVel.y = 0.f;
