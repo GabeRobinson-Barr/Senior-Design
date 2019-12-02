@@ -31,11 +31,6 @@ void Player::update(float dt)
         if( connectedComp != nullptr || floorObj != nullptr)
         {
             onFloor = true;
-            //cout << "hasfloor" << endl;
-        }
-        else
-        {
-            //cout << "hasnofloor" << endl;
         }
         glm::vec3 moveDir = getMoveDir();
         glm::vec3 currVel = getVel();
@@ -64,7 +59,7 @@ void Player::update(float dt)
             addForce(pForce);
             playerSpd = playerSpd + (pForce / getMass()) * dt;
         }
-        else if (glm::length(getVel()) >= 0.0001f && !myGun.retracting)
+        else if (glm::length(getVel()) >= 0.0001f && (!myGun.retracting || myGun.detached))
         {
             glm::vec3 dragVel = -getVel();
             dragVel.y = 0.f;
@@ -77,7 +72,6 @@ void Player::update(float dt)
             nextVel.y = max(nextVel.y, 0.f);
             if(jumped)
             {
-                //cout << "jumped" << endl;
                 translate(glm::vec3(playerUp * jumpStr * dt * 2.f));
                 addForce(playerUp * jumpStr);
 
@@ -102,14 +96,13 @@ void Player::update(float dt)
                 {
                     floorObj = nullptr;
                     onFloor = false;
-                    //cout << "lost Floor" << endl;
                 }
             }
         }
         else
         {
             //cout << "not grounded" << endl;
-            if(!myGun.retracting)
+            if(!myGun.retracting || myGun.detached)
             {
                 addForce(-playerUp * playerGrav * mass);
             }

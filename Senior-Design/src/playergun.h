@@ -23,6 +23,7 @@ public:
     void playerCollision();
     bool isFired = false;
     bool retracting = false;
+    bool detached = false;
 
 protected:
     GameObject* myPlayer;

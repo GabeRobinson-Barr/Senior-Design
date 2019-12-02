@@ -16,7 +16,6 @@ PlayerGun::~PlayerGun()
 
 void PlayerGun::update(float dt)
 {
-    //GameObject::update(dt);
     if(!isFired)
     {
         cout << "unfired" << endl;
@@ -39,10 +38,6 @@ void PlayerGun::update(float dt)
             //setVel(myPlayer->getVel());
             isAttached = true;
             cout << "hit" << endl;
-            if(!connectedComp->isDynamic)
-            {
-                cout << "nondynamic" << endl;
-            }
         }
         else if (currLen >= 500.f)
         {
@@ -54,8 +49,8 @@ void PlayerGun::update(float dt)
     }
     else if(retracting)
     {
-        cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
-        cout << "player vel: " << myPlayer->getVel().x << ", " << myPlayer->getVel().y << ", " << myPlayer->getVel().z << endl;
+        //cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+        //cout << "player vel: " << myPlayer->getVel().x << ", " << myPlayer->getVel().y << ", " << myPlayer->getVel().z << endl;
         ropeLen -= fireSpd * dt;
         glm::vec3 currVec = getPos() - myPlayer->getPos();
         if(ropeLen <= glm::length(currVec))
@@ -72,7 +67,6 @@ void PlayerGun::update(float dt)
                 glm::vec3 spdDiff = (fireSpd * currVec) - spdVec;
                 if(connectedComp != nullptr && !connectedComp->isDynamic)
                 {
-
                     myPlayer->addForce(spdDiff, getPos());
                 }
                 else if(isAttached)
@@ -136,6 +130,7 @@ void PlayerGun::playerCollision()
 {
     if(isFired)
     {
+        detached = false;
         isFired = false;
         firing = false;
         retracting = false;
@@ -153,12 +148,17 @@ void PlayerGun::detach()
 {
     if(isAttached)
     {
+        detached = true;
+        cout << "detached" << endl;
         isAttached = false;
         retracting = true;
         if(connectedComp != nullptr)
         {
             connectedComp->removeAll();
         }
+        disableOne();
+        glm::vec3 retVec = getPos() - myPlayer->getPos();
+        translate(glm::normalize(-retVec) * fireSpd * (16.f / 1000.f));
     }
 }
 

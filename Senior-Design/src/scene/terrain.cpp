@@ -74,7 +74,36 @@ void Terrain::checkCollisions()
                 //cout << "collided" << endl;
                 if(obj1->isSticky || obj2->isSticky)
                 {
-                    GameObject::addStickyCollision(obj1, obj2, pair.second);
+                    PlayerGun* pg = dynamic_cast<PlayerGun*>(obj1);
+                    if(pg != nullptr)
+                    {
+                        Player* p = dynamic_cast<Player*>(obj2);
+                        if((p != nullptr && p->getGun() == pg) || !pg->detached)
+                        {
+                            GameObject::addStickyCollision(obj1, obj2, pair.second);
+                        }
+                    }
+                    else
+                    {
+                        pg = dynamic_cast<PlayerGun*>(obj2);
+                        if(pg != nullptr)
+                        {
+                            Player* p = dynamic_cast<Player*>(obj1);
+                            if((p != nullptr && p->getGun() == pg) || !pg->detached)
+                            {
+                                GameObject::addStickyCollision(obj1, obj2, pair.second);
+                            }
+                        }
+                        else if(!obj1->noColl && !obj2->noColl)
+                        {
+                            GameObject::addStickyCollision(obj1, obj2, pair.second);
+                        }
+                        else
+                        {
+                            obj1->noColl = false;
+                            obj2->noColl = false;
+                        }
+                    }
                 }
                 else
                 {
@@ -94,7 +123,6 @@ void Terrain::checkCollisions()
                     {
                         obj2->noColl = false;
                     }
-
                 }
 
             }
