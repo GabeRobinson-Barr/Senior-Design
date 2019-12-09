@@ -23,6 +23,7 @@ public:
     void dynamicCollide();
     void setFloor(GameObject* obj);
     GameObject* getGun();
+    void respawn();
 
 protected:
     //Weapon m_weapon;

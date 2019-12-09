@@ -21,9 +21,11 @@ public:
     void retract(glm::vec3 playerPos);
     void detach();
     void playerCollision();
+    void respawn();
     bool isFired = false;
     bool retracting = false;
     bool detached = false;
+
 
 protected:
     GameObject* myPlayer;

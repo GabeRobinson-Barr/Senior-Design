@@ -21,6 +21,12 @@ Player::~Player(){
 
 void Player::update(float dt)
 {
+    if(getPos().y <= -50.f)
+    {
+        cout << "respawn" << endl;
+        respawn();
+        return;
+    }
     updated = false;
     if(tempStop)
     {
@@ -303,4 +309,31 @@ void Player::setFloor(GameObject *obj)
 GameObject* Player::getGun()
 {
     return &myGun;
+}
+
+void Player::respawn()
+{
+        updateTransform(glm::vec3(0,20,0), glm::vec3(0,0,0), scale);
+        setVel(glm::vec3(0));
+        setRotVel(glm::vec3(0));
+        forces = glm::vec3(0);
+        onFloor = false;
+        floorObj = nullptr;
+        lastTransform = m_transform;
+        pos = glm::vec3(0,20,0);
+        rot = glm::vec3(0);
+        recomputeAttributes();
+        recomputeCam();
+        jumped = false;
+        playerSpd = glm::vec3(0);
+        forceSpd = glm::vec3(0);
+        rotRight = false;
+        rotLeft = false;
+        rotUp = false;
+        rotDown = false;
+        moveFor = false;
+        moveBack = false;
+        moveRight = false;
+        moveLeft = false;
+        myGun.respawn();
 }

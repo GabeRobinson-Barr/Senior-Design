@@ -166,3 +166,16 @@ glm::vec4 PlayerGun::getColor()
 {
     return glm::vec4(1.f, 1.f, 1.f, 1.f);
 }
+
+void PlayerGun::respawn()
+{
+    isFired = false;
+    firing = false;
+    retracting = false;
+    isAttached = false;
+    if(connectedComp != nullptr)
+    {
+        connectedComp->removeAll();
+    }
+    updateTransform(myPlayer->getPos(), myPlayer->getRot(), scale);
+}
