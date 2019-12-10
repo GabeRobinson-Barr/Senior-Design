@@ -30,7 +30,8 @@ public:
 protected:
     GameObject* myPlayer;
     glm::vec3 castVec;
-    float fireSpd = 20.f;
+    float fireSpd = 100.f;
+    float pullSpd = 20.f;
     bool firing = false;
     bool isAttached = false;
 

@@ -156,11 +156,12 @@ void ConnectedObject::removeObj(GameObject *obj)
             break;
         }
     }
+    isDynamic = stillDynamic;
     if(objs.size() <= 1)
     {
         removeAll();
     }
-    isDynamic = stillDynamic;
+
 }
 
 ConnectedObject* ConnectedObject::mergeConnectedObjs(ConnectedObject *c1, ConnectedObject *c2)

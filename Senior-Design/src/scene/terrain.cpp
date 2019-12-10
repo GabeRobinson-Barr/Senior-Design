@@ -78,7 +78,7 @@ void Terrain::checkCollisions()
                     if(pg != nullptr)
                     {
                         Player* p = dynamic_cast<Player*>(obj2);
-                        if((p != nullptr && p->getGun() == pg) || !pg->detached)
+                        if(p != nullptr || !pg->retracting)
                         {
                             GameObject::addStickyCollision(obj1, obj2, pair.second);
                         }
@@ -89,7 +89,7 @@ void Terrain::checkCollisions()
                         if(pg != nullptr)
                         {
                             Player* p = dynamic_cast<Player*>(obj1);
-                            if((p != nullptr && p->getGun() == pg) || !pg->detached)
+                            if(p != nullptr || !pg->retracting)
                             {
                                 GameObject::addStickyCollision(obj1, obj2, pair.second);
                             }
@@ -159,7 +159,7 @@ void Terrain::addPlayer(Player *p)
 
 void Terrain::setupLevel()
 {
-    GameObject* obj = new GameObject(glm::vec3(0,-0.5f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
+    GameObject* obj = new GameObject(glm::vec3(0,-0.5f,0), glm::vec3(0.f), glm::vec3(100.f, 1.f, 100.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
     obj = new GameObject(glm::vec3(0,150.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);

@@ -23,7 +23,7 @@ void Player::update(float dt)
 {
     if(getPos().y <= -50.f)
     {
-        cout << "respawn" << endl;
+        cout << "respawn from: " << getPos().y << endl;
         respawn();
         return;
     }
@@ -40,7 +40,10 @@ void Player::update(float dt)
         }
         glm::vec3 moveDir = getMoveDir();
         glm::vec3 currVel = getVel();
-
+        if(glm::length(currVel) >= maxSpd)
+        {
+            setVel(currVel * 0.95f);
+        }
         if (rotRight) {
             nextRot.y -= rotSpd * dt;
         }
@@ -65,7 +68,7 @@ void Player::update(float dt)
             addForce(pForce);
             playerSpd = playerSpd + (pForce / getMass()) * dt;
         }
-        else if (glm::length(getVel()) >= 0.0001f && (!myGun.retracting || myGun.detached))
+        else if (glm::length(getVel()) >= 0.0001f && !(myGun.retracting && myGun.connectedComp != nullptr))
         {
             glm::vec3 dragVel = -getVel();
             dragVel.y = 0.f;
@@ -108,7 +111,7 @@ void Player::update(float dt)
         else
         {
             //cout << "not grounded" << endl;
-            if(!myGun.retracting || myGun.detached)
+            if(!(myGun.retracting && myGun.connectedComp != nullptr))
             {
                 addForce(-playerUp * playerGrav * mass);
             }
