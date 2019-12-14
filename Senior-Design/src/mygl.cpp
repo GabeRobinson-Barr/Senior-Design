@@ -8,7 +8,7 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
-      mp_geomCube(new Cube(this)), mp_geomSphere(new Sphere(this)), mp_worldAxes(new WorldAxes(this)),
+      mp_geomCube(new Cube(this)), mp_geomSphere(new Sphere(this)), mp_worldAxes(new WorldAxes(this)), mp_crosshair(new Crosshair(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain()), paused(false), player1(new Player(&mp_camera))
 {
@@ -22,6 +22,8 @@ MyGL::MyGL(QWidget *parent)
     setCursor(Qt::BlankCursor); // Make the cursor invisible
     grabKeyboard();
     mp_terrain->addPlayer(player1);
+    p1Gun = dynamic_cast<PlayerGun*>(player1->getGun());
+    mp_tether = new Tetherline(this, player1, p1Gun);
 }
 
 MyGL::~MyGL()
@@ -30,6 +32,9 @@ MyGL::~MyGL()
     glDeleteVertexArrays(1, &vao);
     mp_geomCube->destroy();
     mp_geomSphere->destroy();
+    mp_worldAxes->destroy();
+    mp_crosshair->destroy();
+    mp_tether->destroy();
 
     delete mp_geomCube;
     delete mp_geomSphere;
@@ -38,6 +43,8 @@ MyGL::~MyGL()
     delete mp_progFlat;
     delete mp_camera;
     delete mp_terrain;
+    delete mp_crosshair;
+    delete mp_tether;
 }
 
 
@@ -74,6 +81,8 @@ void MyGL::initializeGL()
     mp_geomCube->create();
     mp_geomSphere->create();
     mp_worldAxes->create();
+    mp_crosshair->create();
+    mp_tether->create();
 
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -182,6 +191,13 @@ void MyGL::paintGL()
     glDisable(GL_DEPTH_TEST);
     mp_progFlat->setModelMatrix(glm::mat4());
     mp_progFlat->draw(*mp_worldAxes);
+    if(p1Gun->isFired)
+    {
+        mp_tether->update();
+        mp_progFlat->draw(*mp_tether);
+    }
+    mp_progFlat->setModelMatrix(player1->getCrosshair());
+    mp_progFlat->draw(*mp_crosshair);
     glEnable(GL_DEPTH_TEST);
 }
 

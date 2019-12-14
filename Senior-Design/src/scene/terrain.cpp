@@ -162,13 +162,16 @@ void Terrain::setupLevel()
     GameObject* obj = new GameObject(glm::vec3(0,-0.5f,0), glm::vec3(0.f), glm::vec3(100.f, 1.f, 100.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);
-    obj = new GameObject(glm::vec3(0,150.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
-    obj->isDynamic = false;
-    root.add(obj);
-    /*obj = new GameObject(glm::vec3(60.f,3.f,3.f), glm::vec3(0.f), glm::vec3(5.f), 1.f, SPHERE);
-    root.add(obj);
-    obj->addForce(glm::vec3(-8.f,1.f,0),obj->getPos() + glm::vec3(-1.f,-0.1f,0));
-    obj = new GameObject(glm::vec3(0,10.f,0), glm::vec3(0.f), glm::vec3(10.f), 1.f, CUBE);
+    /*obj = new GameObject(glm::vec3(0,150.f,0), glm::vec3(0.f), glm::vec3(dimensions.x / 2.f, 1.f, dimensions.z / 2.f), 1.f, CUBE);
     obj->isDynamic = false;
     root.add(obj);*/
+    obj = new GameObject(glm::vec3(50.f, 50.f, 20.f), glm::vec3(0.f), glm::vec3(20.f, 5.f, 20.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
+    obj = new GameObject(glm::vec3(25.f, 150.f, 10.f), glm::vec3(0.f), glm::vec3(10.f, 5.f, 30.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
+    obj = new GameObject(glm::vec3(10.f, 300.f, 0.f), glm::vec3(0.f), glm::vec3(20.f, 5.f, 20.f), 1.f, CUBE);
+    obj->isDynamic = false;
+    root.add(obj);
 }

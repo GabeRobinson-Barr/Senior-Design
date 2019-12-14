@@ -17,7 +17,7 @@ Camera::Camera(unsigned int w, unsigned int h):
 {}
 
 Camera::Camera(unsigned int w, unsigned int h, const glm::vec3 &e, const glm::vec3 &r, const glm::vec3 &worldUp):
-    fovy(45),
+    fovy(60),
     width(w),
     height(h),
     near_clip(0.1f),

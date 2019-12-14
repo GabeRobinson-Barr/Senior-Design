@@ -18,7 +18,7 @@ void PlayerGun::update(float dt)
 {
     if(!isFired)
     {
-        cout << "unfired" << endl;
+        //cout << "unfired" << endl;
         GameObject::updateTransform(myPlayer->getPos(), myPlayer->getRot(), scale);
         setVel(myPlayer->getVel());
         setRotVel(myPlayer->getRotVel());
@@ -29,7 +29,7 @@ void PlayerGun::update(float dt)
     }
     else if(firing)
     {
-        cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+        //cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
         float currLen = glm::length(getPos() - myPlayer->getPos());
         if(connectedComp != nullptr)
         {
@@ -37,7 +37,7 @@ void PlayerGun::update(float dt)
             ropeLen = currLen;
             //setVel(myPlayer->getVel());
             isAttached = true;
-            cout << "hit" << endl;
+            //cout << "hit" << endl;
         }
         else if (currLen >= 500.f)
         {
@@ -49,7 +49,7 @@ void PlayerGun::update(float dt)
     }
     else if(retracting)
     {
-        cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
+        //cout << "fired pos: " << getPos().x << ", " << getPos().y << ", " << getPos().z << endl;
         //cout << "player vel: " << myPlayer->getVel().x << ", " << myPlayer->getVel().y << ", " << myPlayer->getVel().z << endl;
         ropeLen -= pullSpd * dt;
         glm::vec3 currVec = getPos() - myPlayer->getPos();
@@ -125,7 +125,7 @@ void PlayerGun::retract(glm::vec3 playerPos)
 {
     if(isFired && !retracting)
     {
-        cout << "retracting" << endl;
+        //cout << "retracting" << endl;
         firing = false;
         retracting = true;
         disableOne();
@@ -139,7 +139,7 @@ void PlayerGun::playerCollision()
 {
     if(isFired)
     {
-        cout << "hitplayer" << endl;
+        //cout << "hitplayer" << endl;
         detached = false;
         isFired = false;
         firing = false;

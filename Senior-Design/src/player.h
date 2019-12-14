@@ -17,6 +17,7 @@ public:
     void addCollision(GameObject* obj, glm::vec3 collisionPt) override;
     void recomputeAttributes();
     void recomputeCam();
+    glm::mat4 getCrosshair();
     bool objIsFloor(GameObject* obj);
     glm::vec3 getMoveDir();
     float getMoveSpeed();

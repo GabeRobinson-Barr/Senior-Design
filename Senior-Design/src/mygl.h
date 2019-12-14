@@ -10,6 +10,9 @@
 #include "camera.h"
 #include <scene/terrain.h>
 #include "player.h"
+#include "playergun.h"
+#include <scene/crosshair.h>
+#include <scene/tetherline.h>
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -22,6 +25,8 @@ private:
     Cube* mp_geomCube;// The instance of a unit cube we can use to render any cube. Should NOT be used in final version of your project.
     Sphere* mp_geomSphere;
     WorldAxes* mp_worldAxes; // A wireframe representation of the world axes. It is hard-coded to sit centered at (32, 128, 32).
+    Crosshair* mp_crosshair;
+    Tetherline* mp_tether;
     ShaderProgram* mp_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram* mp_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
 
@@ -39,6 +44,7 @@ private:
                               // your mouse stays within the screen bounds and is always read.
     bool paused;
     Player* player1;
+    PlayerGun* p1Gun;
 
 public:
     explicit MyGL(QWidget *parent = 0);

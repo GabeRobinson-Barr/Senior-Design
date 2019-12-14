@@ -265,6 +265,15 @@ void Player::recomputeCam()
     cam->RecomputeAttributes();
 }
 
+glm::mat4 Player::getCrosshair()
+{
+    glm::vec3 crossPos =  cam->eye + glm::vec3(lastTransform.rotMat() * glm::rotate(glm::mat4(), glm::radians(camRot.x), glm::vec3(1,0,0)) *
+                                              glm::vec4(0,0,0.5f,1));
+    return glm::translate(glm::mat4(1.0f), crossPos)
+            * lastTransform.rotMat() * glm::rotate(glm::mat4(), glm::radians(camRot.x), glm::vec3(1,0,0))
+            * glm::scale(glm::mat4(1.0f), glm::vec3(1,1,1));
+}
+
 bool Player::objIsFloor(GameObject* obj)
 {
     return floorObj != nullptr && floorObj == obj;

@@ -17,6 +17,8 @@ release/terrain.o
 release/worldaxes.o
 release/gameobject.o
 release/playergun.o
+release/crosshair.o
+release/tetherline.o
 release/qrc_glsl.o
 release/moc_mainwindow.o
 release/moc_mygl.o

@@ -20,7 +20,9 @@ SOURCES += \
     $$PWD/scene/terrain.cpp \
     $$PWD/scene/worldaxes.cpp \
     $$PWD/gameobject.cpp \
-    $$PWD/playergun.cpp
+    $$PWD/playergun.cpp \
+    $$PWD/scene/crosshair.cpp \
+    $$PWD/scene/tetherline.cpp
 
 HEADERS += \
     $$PWD/connectedobject.h \
@@ -41,4 +43,6 @@ HEADERS += \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
     $$PWD/gameobject.h \
-    $$PWD/playergun.h
+    $$PWD/playergun.h \
+    $$PWD/scene/crosshair.h \
+    $$PWD/scene/tetherline.h
