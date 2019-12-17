@@ -1,5 +1,4 @@
-# Senior-Design
-Project Accomplishments - Gabriel Robinson-Barr
+Senior Design Project Accomplishments - Gabriel Robinson-Barr
 
 Physics
 - Cubes and Spheres implemented
